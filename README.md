@@ -19,8 +19,8 @@ management, to ensure your code runs using the correct components and not someon
 | Number | Name              | User                                      | Email                                        |
 |--------|-------------------|-------------------------------------------|----------------------------------------------|
 | 95529  | Carolina Baptista | <https://github.com/CarolinaBaptista98>   | <mailto:ana.p.baptista@tecnico.ulisboa.pt>   |
-| 97281  | Allan Donizette   | <https://github.com/BobUser>              | <mailto:bob@tecnico.ulisboa.pt>              |
-| 97326  | Martim Correia    | <https://github.com/CharlieUser>          | <mailto:charlie@tecnico.ulisboa.pt>          |
+| 97281  | Allan Donizette   | <https://github.com/Alravid>              | <mailto:allancravid@tecnico.ulisboa.pt>      |
+| 97326  | Martim Correia    | <https://github.com/Martimc123>           | <mailto:martim.correia@tecnico.ulisboa.pt>   |
 
 ## Getting Started
 
