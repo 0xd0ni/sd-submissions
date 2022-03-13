@@ -14,8 +14,6 @@ management, to ensure your code runs using the correct components and not someon
 
 ### Team Members
 
-*(fill the table below with the team members, and then delete this line)*
-
 | Number | Name              | User                                      | Email                                        |
 |--------|-------------------|-------------------------------------------|----------------------------------------------|
 | 95529  | Carolina Baptista | <https://github.com/CarolinaBaptista98>   | <mailto:ana.p.baptista@tecnico.ulisboa.pt>   |
