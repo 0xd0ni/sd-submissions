@@ -6,7 +6,7 @@ public class Student {
     System.out.println(Student.class.getSimpleName());
     System.out.printf("Received %d Argument(s)%n", args.length);
     for (int i = 0; i < args.length; i++) {
-      System.out.printf("args[%d] = %s%n", i, args[i]);
+      System.out.printf("args[%d] = %s%n", i, args[i]); //a
     }
   }
 }
