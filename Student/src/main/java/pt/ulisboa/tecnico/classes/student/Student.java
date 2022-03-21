@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+
 public class Student {
 
   public static void main(String[] args) throws Exception {
