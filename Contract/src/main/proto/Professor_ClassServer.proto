@@ -27,7 +27,7 @@ message ListClassResponse {
 }
 
 message CancelEnrollmentRequest {
-  string studentId = 2;
+  string studentId = 1;
 }
 
 message CancelEnrollmentResponse {
