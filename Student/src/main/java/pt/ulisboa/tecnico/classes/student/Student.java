@@ -1,4 +1,5 @@
 package pt.ulisboa.tecnico.classes.student;
+import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import java.util.Scanner;
 
@@ -39,20 +40,26 @@ public class Student {
 
       if (command.equals("list")){
         StudentClassServer.ListClassResponse listResponse = frontend.list();
-        System.out.println(listResponse);
+        System.out.println(Stringify.format(listResponse.getClassState()));
       }
 
       else if (command.equals("enroll")) {
         StudentClassServer.EnrollResponse enrollResponse = frontend.enroll(id, name);
-        System.out.println(enrollResponse);
+        if (enrollResponse.getCode().getNumber() == 0) {
+          System.out.println("The action completed successfully.");
+        } else {
+          System.out.println("Some error");
+        }
       }
       else if (command.equals("exit")) {
         frontend.close();
         System.exit(0);
       }
       else {
-        System.out.println("Invalid command");
+        System.out.println("Invalid command.");
       }
+
+      System.out.println("");
     }
   }
 }
