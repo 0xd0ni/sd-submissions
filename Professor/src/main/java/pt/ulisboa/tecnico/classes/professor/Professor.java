@@ -1,11 +1,6 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
-
 import java.util.Scanner;
 
 public class Professor {
@@ -13,11 +8,7 @@ public class Professor {
   public static void main(String[] args) {
     Scanner input = new Scanner(System.in);
 
-    final String serverAddress = "localhost:5000";
-
-    final ManagedChannel channel = ManagedChannelBuilder.forTarget(serverAddress).usePlaintext().build();
-    ProfessorServiceGrpc.ProfessorServiceBlockingStub stub = ProfessorServiceGrpc.newBlockingStub(channel);
-
+    ProfessorFrontend frontend = new ProfessorFrontend("localhost", 5000);
 
     while(input.hasNextLine()){
       System.out.print("> ");
@@ -28,26 +19,25 @@ public class Professor {
       System.out.println(command);
 
       if (command.equals("list")){
-        ProfessorClassServer.ListClassRequest listRequest = ProfessorClassServer.ListClassRequest.newBuilder().build();
-        ProfessorClassServer.ListClassResponse listResponse = stub.listClass(listRequest);
-
-        //System.out.println(listResponse.getCode());
-        //System.out.println(Stringfy.format(listResponse.getClassState()));
-
+        ProfessorClassServer.ListClassResponse listResponse = frontend.list();
         System.out.println(listResponse);
       }
 
       else if (command.equals("openEnrollments")) {
         Integer numStudents = Integer.parseInt(line[1]);
-
-        ProfessorClassServer.OpenEnrollmentsRequest openEnrollmentsRequest = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
-        ProfessorClassServer.OpenEnrollmentsResponse openEnrollmentsResponse = stub.openEnrollments(openEnrollmentsRequest);
-
+        ProfessorClassServer.OpenEnrollmentsResponse openEnrollmentsResponse = frontend.openEnrollments(numStudents);
         System.out.println(openEnrollmentsResponse);
-
+      }
+      else if (command.equals("closeEnrollments")){
+        ProfessorClassServer.CloseEnrollmentsResponse closeEnrollmentsResponse = frontend.closeEnrollments();
+        System.out.println(closeEnrollmentsResponse);
+      }
+      else if (command.equals("cancelEnrollment")){
+        ProfessorClassServer.CancelEnrollmentResponse cancelEnrollmentResponse = frontend.cancelEnrollment(line[1]);
+        System.out.println(cancelEnrollmentResponse);
       }
       else if (command.equals("exit")) {
-        channel.shutdownNow();
+        frontend.close();
         System.exit(0);
       }
       else {
