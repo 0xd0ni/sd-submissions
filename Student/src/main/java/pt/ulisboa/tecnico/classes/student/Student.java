@@ -1,12 +1,5 @@
 package pt.ulisboa.tecnico.classes.student;
-import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
-
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-
 import java.util.Scanner;
 
 public class Student {
@@ -28,19 +21,15 @@ public class Student {
     id = args[0];
     name = "";
     for (int j = 1; j < args.length; j++) {
-      name.concat(args[j]);
-      if (j == args.length - 1)
-        name.concat(" ");
+      name += args[j];
+      if (j != args.length - 1)
+        name += " ";
     }
     System.out.printf("Student's id %s, and name %s\n", id, name);
 
     Scanner input = new Scanner(System.in);
 
-    final String serverAddress = "localhost:5000";
-
-    final ManagedChannel channel = ManagedChannelBuilder.forTarget(serverAddress).usePlaintext().build();
-    StudentServiceGrpc.StudentServiceBlockingStub stub = StudentServiceGrpc.newBlockingStub(channel);
-
+    StudentFrontend frontend = new StudentFrontend("localhost", 5000);
 
     while(input.hasNextLine()){
       System.out.print("> ");
@@ -49,21 +38,16 @@ public class Student {
       System.out.println(command);
 
       if (command.equals("list")){
-        StudentClassServer.ListClassRequest listRequest = StudentClassServer.ListClassRequest.newBuilder().build();
-        StudentClassServer.ListClassResponse listResponse = stub.listClass(listRequest);
-
+        StudentClassServer.ListClassResponse listResponse = frontend.list();
         System.out.println(listResponse);
       }
 
       else if (command.equals("enroll")) {
-        ClassesDefinitions.Student student = ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build();
-        StudentClassServer.EnrollRequest enrollRequest = StudentClassServer.EnrollRequest.newBuilder().setStudent(student).build();
-        StudentClassServer.EnrollResponse enrollResponse = stub.enroll(enrollRequest);
-
+        StudentClassServer.EnrollResponse enrollResponse = frontend.enroll(id, name);
         System.out.println(enrollResponse);
       }
       else if (command.equals("exit")) {
-        channel.shutdownNow();
+        frontend.close();
         System.exit(0);
       }
       else {
