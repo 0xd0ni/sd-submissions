@@ -7,7 +7,7 @@ public class Student {
   static private String name;
   static private String id;
 
-  public static void main(String[] args) throws Exception {
+  public static void main(String[] args) {
 
     //name = "João";
     //id = "Aluno001";
