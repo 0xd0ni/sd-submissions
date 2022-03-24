@@ -24,20 +24,20 @@ public class AdminFrontend implements AutoCloseable {
         stub = AdminServiceGrpc.newBlockingStub(channel);
     }
 
-    public int getCodeActivate(ActivateResponse response) {
-        return response.getCodeValue();
-    }
-
-    public int getCodeDeactivate(DeactivateResponse response) {
-        return response.getCodeValue();
-    }
-
-    public int getCodeDump(DumpResponse response) {
+    public int getCode(ActivateResponse response) {
         return response.getCodeValue();
     }
 
     public ClassState getClassState(DumpResponse response) {
         return response.getClassState();
+    }
+
+    public int getCodeD(DeactivateResponse response) {
+        return response.getCodeValue();
+    }
+
+    public int getCodeDump(DumpResponse response) {
+        return response.getCodeValue();
     }
 
     public ActivateResponse setActivate(ActivateRequest request)

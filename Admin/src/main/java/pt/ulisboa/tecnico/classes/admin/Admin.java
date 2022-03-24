@@ -8,6 +8,7 @@ import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpRequest;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+
 import java.util.Scanner;
 
 public class Admin {
@@ -19,52 +20,58 @@ public class Admin {
 
 
   public static void main(String[] args) {
+
     final String host = "localhost";
     final int port = 5000;
 
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
-        System.out.printf("> ");
+        System.out.printf("%n> ");
         try {
           String line = scanner.nextLine();
-          switch (line)
-          {
-            case EXIT_CMD:
-              System.exit(0);
-              break;
+          switch (line) {
 
-            case DUMP_CMD:
-              DumpRequest dumpRequest = DumpRequest.newBuilder().build();
-              DumpResponse dumpResponse = frontend.setDump(dumpRequest);
+            case EXIT_CMD -> System.exit(0);
 
-              ResponseCode responseCode = ResponseCode.forNumber(frontend.getCodeDump(dumpResponse));
-              if (responseCode == ResponseCode.OK)
-                System.out.println(Stringify.format(frontend.getClassState(dumpResponse)));
-              else
-                System.out.println(Stringify.format(responseCode));
-              break;
+            case DUMP_CMD -> {
 
-            case ACTIV_CMD:
-              ActivateRequest activateRequest = ActivateRequest.newBuilder().build();
-              ActivateResponse activateResponse = frontend.setActivate(activateRequest);
+              DumpRequest dump_req = DumpRequest.newBuilder().build();
+              DumpResponse dump_res = frontend.setDump(dump_req);
+              if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(dump_res)));
+              else if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+            }
 
-              ResponseCode activateCode = ResponseCode.forNumber(frontend.getCodeActivate(activateResponse));
-              System.out.println(Stringify.format(activateCode));
-              break;
+            case ACTIV_CMD -> {
+              ActivateRequest req = ActivateRequest.newBuilder().build();
+              ActivateResponse res = frontend.setActivate(req);
 
-            case DEACT_CMD:
-              DeactivateRequest deactivateRequest = DeactivateRequest.newBuilder().build();
-              DeactivateResponse deactivateResponse = frontend.setDeactivate(deactivateRequest);
+              if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
 
-              ResponseCode deactCode = ResponseCode.forNumber(frontend.getCodeDeactivate(deactivateResponse));
-              System.out.println(Stringify.format(deactCode));
-              break;
+              else if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+            }
+            case DEACT_CMD -> {
+
+              DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
+              DeactivateResponse d_res = frontend.setDeactivate(d_req);
+
+              if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
+
+              else if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+            }
+            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
           }
         } catch (NullPointerException e) {
-          System.out.println("NULL");
+          System.err.println("Error: null pointer caught");
         }
-        System.out.printf("%n");
       }
+    } finally {
+      System.out.println("");
     }
   }
 
