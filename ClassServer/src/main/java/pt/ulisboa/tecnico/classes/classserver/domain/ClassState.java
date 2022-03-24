@@ -1,6 +1,10 @@
 package pt.ulisboa.tecnico.classes.classserver.domain;
 
 
+import pt.ulisboa.tecnico.classes.classserver.exception.ClassesException;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.Stringify;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,6 +49,13 @@ public class ClassState {
 
     public void addDiscard(Student student) {
         discarded.add(student);
+
+    }
+
+    public void containsStudent(Student student) throws ClassesException {
+        if(enrolled.contains(student)) {
+            throw new ClassesException(Stringify.format(ResponseCode.STUDENT_ALREADY_ENROLLED));
+        }
 
     }
 
