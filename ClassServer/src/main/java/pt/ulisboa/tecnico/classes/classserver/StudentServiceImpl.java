@@ -21,13 +21,25 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
     public StudentServiceImpl(ClassState _class) {
         this._class = _class;
+
     }
+
+
+
 
     @Override
     public void listClass(StudentClassServer.ListClassRequest listClassRequest,
                           StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
 
-        // TODO !!
+
+
+
+        //StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
+        //        ClassesDefinitions.ResponseCode.OK).setClassState().build();
+
+
+        //responseObserver.onNext(response);
+        responseObserver.onCompleted();
 
     }
 
@@ -47,6 +59,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
             _class.containsStudent(student);
 
             _class.addEnroll(student);
+            _class.addToRegistry(studentId,student);
 
             responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
                     ClassesDefinitions.ResponseCode.OK).build());

@@ -18,7 +18,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void activate(AdminClassServer.ActivateRequest activateRequest,
-                         StreamObserver<AdminClassServer.ActivateResponse> activateResponse) {
+                         StreamObserver<AdminClassServer.ActivateResponse> responseObserver) {
 
         // TODO !!
 
@@ -26,7 +26,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public  void deactivate(AdminClassServer.DeactivateRequest deactivateRequest,
-                            StreamObserver<AdminClassServer.DeactivateResponse> deactivateResponse) {
+                            StreamObserver<AdminClassServer.DeactivateResponse> responseObserver) {
 
         // TODO !!
 
@@ -35,7 +35,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void activateGossip(AdminClassServer.ActivateGossipRequest activateGossipRequest,
-                               StreamObserver<AdminClassServer.ActivateGossipResponse> activateGossipResponse) {
+                               StreamObserver<AdminClassServer.ActivateGossipResponse> responseObserver) {
 
         // TODO !!
 
@@ -43,23 +43,29 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     @Override
     public void deactivateGossip(AdminClassServer.DeactivateGossipRequest deactivateGossipRequest,
-                                 StreamObserver<AdminClassServer.DeactivateGossipResponse> deactivateGossipResponse) {
+                                 StreamObserver<AdminClassServer.DeactivateGossipResponse> responseObserver) {
 
         // TODO !!
     }
 
     @Override
     public void gossip(AdminClassServer.GossipRequest gossipRequest,
-                       StreamObserver<AdminClassServer.GossipResponse> gossipResponse) {
+                       StreamObserver<AdminClassServer.GossipResponse> responseObserver) {
 
         // TODO !!
 
     }
 
     @Override
-    public void dump(AdminClassServer.DumpRequest dumpRequest, StreamObserver<AdminClassServer.DumpResponse> dumpResponse) {
+    public void dump(AdminClassServer.DumpRequest dumpRequest, StreamObserver<AdminClassServer.DumpResponse> responseObserver) {
 
-        // PHASE 1
+        //AdminClassServer.DumpResponse response = AdminClassServer.DumpResponse.newBuilder().setCode(
+        //        ClassesDefinitions.ResponseCode.OK).setClassState().build();
+
+
+        //responseObserver.onNext(response);
+        responseObserver.onCompleted();
+
 
     }
 

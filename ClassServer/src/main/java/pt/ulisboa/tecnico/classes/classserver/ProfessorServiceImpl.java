@@ -12,8 +12,6 @@ import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.classserver.exception.ArgumentsValidation;
 import pt.ulisboa.tecnico.classes.Stringify;
 
-import java.util.Optional;
-
 import static io.grpc.Status.INVALID_ARGUMENT;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
@@ -73,6 +71,13 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
     public void listClass(ProfessorClassServer.ListClassRequest listRequest,
                           StreamObserver<ProfessorClassServer.ListClassResponse> responseObserver) {
 
+
+        //ProfessorClassServer.ListClassResponse response = ProfessorClassServer.ListClassResponse.newBuilder().setCode(
+        //        ClassesDefinitions.ResponseCode.OK).setClassState().build();
+
+
+        //responseObserver.onNext(response);
+        responseObserver.onCompleted();
 
     }
 
