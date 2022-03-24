@@ -5,9 +5,15 @@ import io.grpc.stub.StreamObserver;
 
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
-
+import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
+
+    private ClassState _class;
+
+    public AdminServiceImpl(ClassState _class) {
+        this._class = _class;
+    }
 
 
     @Override
