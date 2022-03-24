@@ -1,64 +1,90 @@
 package pt.ulisboa.tecnico.classes.professor;
 
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+
 import java.util.Scanner;
 
 public class Professor {
 
+  private static final String EXIT_CMD = "exit";
+  private static final String LIST_CMD = "list";
+  private static final String OE_CMD = "openEnrollments";
+  private static final String CE_CMD = "closeEnrollments";
+  private static final String CAN_ENR_CMD = "cancelEnrollment";
+
+
   public static void main(String[] args) {
-    Scanner input = new Scanner(System.in);
 
-    ProfessorFrontend frontend = new ProfessorFrontend("localhost", 5000);
+    final String host = "localhost";
+    final int port = 5000;
 
-    while(input.hasNextLine()){
-      System.out.print("> ");
-      System.out.flush();
-      String[] line = input.nextLine().split(" ");
-      String command = line[0];
+    try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+      while (true) {
+        System.out.printf("%n> ");
+        try {
+          String[] line = scanner.nextLine().split(" ");
+          switch (line[0]) {
+            case EXIT_CMD -> System.exit(0);
 
-      System.out.println(command);
+            case LIST_CMD -> {
+              ListClassRequest list_req = ListClassRequest.newBuilder().build();
+              ListClassResponse list_res = frontend.setListClass(list_req);
+              if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(list_res)));
+              else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+            }
 
-      if (command.equals("list")){
-        ProfessorClassServer.ListClassResponse listResponse = frontend.list();
-        System.out.println(Stringify.format(listResponse.getClassState()));
-      }
+            case OE_CMD -> {
+              int numStudents = Integer.parseInt(line[1]);
+              OpenEnrollmentsRequest oe_req = OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
+              OpenEnrollmentsResponse oe_res = frontend.setOE(oe_req);
+              if (ResponseCode.forNumber(frontend.getCodeOE(oe_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCodeOE(oe_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              else if (ResponseCode.forNumber(frontend.getCodeOE(oe_res)) == ResponseCode.ENROLLMENTS_ALREADY_OPENED)
+                System.out.println(Stringify.format(ResponseCode.ENROLLMENTS_ALREADY_OPENED));
+            }
 
-      else if (command.equals("openEnrollments")) {
-        Integer numStudents = Integer.parseInt(line[1]);
-        ProfessorClassServer.OpenEnrollmentsResponse openEnrollmentsResponse = frontend.openEnrollments(numStudents);
-        if (openEnrollmentsResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
+            case CE_CMD -> {
+              CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
+              CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
+              if (ResponseCode.forNumber(frontend.getCodeCE(ce_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCodeCE(ce_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              else if (ResponseCode.forNumber(frontend.getCodeCE(ce_res)) == ResponseCode.ENROLLMENTS_ALREADY_CLOSED)
+                System.out.println(Stringify.format(ResponseCode.ENROLLMENTS_ALREADY_CLOSED));
+            }
+            case CAN_ENR_CMD -> {
+              if (!frontend.checkStudentId(line[1]))
+                break;
+              CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
+              CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
+              if (ResponseCode.forNumber(frontend.getCodeCanEnr(c_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCodeCanEnr(c_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              else if (ResponseCode.forNumber(frontend.getCodeCanEnr(c_res)) == ResponseCode.NON_EXISTING_STUDENT)
+                System.out.println(Stringify.format(ResponseCode.NON_EXISTING_STUDENT));
+            }
+            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
+          }
+        } catch (NullPointerException e) {
+          System.err.println("Error: null pointer caught");
+        }
+        catch (NumberFormatException e) {
+          System.err.println("Error: string given instead of a number");
         }
       }
-      else if (command.equals("closeEnrollments")){
-        ProfessorClassServer.CloseEnrollmentsResponse closeEnrollmentsResponse = frontend.closeEnrollments();
-        if (closeEnrollmentsResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
-        }
-      }
-      else if (command.equals("cancelEnrollment")){
-        ProfessorClassServer.CancelEnrollmentResponse cancelEnrollmentResponse = frontend.cancelEnrollment(line[1]);
-        if (cancelEnrollmentResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
-        }
-      }
-      else if (command.equals("exit")) {
-        frontend.close();
-        System.exit(0);
-      }
-      else {
-        System.out.println("Invalid command");
-      }
-
+    } finally {
       System.out.println("");
     }
   }
-}
 
+}
