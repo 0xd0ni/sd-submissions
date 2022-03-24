@@ -1,17 +1,25 @@
 package pt.ulisboa.tecnico.classes.student;
+
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+
 import java.util.Scanner;
 
 public class Student {
 
-  static private String name;
-  static private String id;
+  private static String name;
+  private static String id;
+  private static final String EXIT_CMD = "exit";
+  private static final String LIST_CMD = "list";
+  private static final String E_CMD = "enroll";
+
 
   public static void main(String[] args) {
 
-    //name = "João";
-    //id = "Aluno001";
+    final String host = "localhost";
+    final int port = 5000;
 
     if (args.length < 2) {
       System.err.println("Argument(s) missing!");
@@ -28,38 +36,53 @@ public class Student {
     }
     System.out.printf("Student's id %s, and name %s\n", id, name);
 
-    Scanner input = new Scanner(System.in);
+    try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+      while (true) {
+        System.out.printf("%n> ");
+        try {
+          String[] line = scanner.nextLine().split(" ");
+          switch (line[0])
+          {
+            case EXIT_CMD:
+              break;
 
-    StudentFrontend frontend = new StudentFrontend("localhost", 5000);
+            case LIST_CMD:
+              ListClassRequest list_req = ListClassRequest.newBuilder().build();
+              ListClassResponse list_res = frontend.setListClass(list_req);
+              if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(list_res)));
+              else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              break;
 
-    while(input.hasNextLine()){
-      System.out.print("> ");
-      System.out.flush();
-      String command = input.nextLine();
-      System.out.println(command);
+            case E_CMD:
+              EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
+              EnrollResponse e_res = frontend.setEnroll(e_req);
+              if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.OK)
+                System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.NON_EXISTING_STUDENT)
+                System.out.println(Stringify.format(ResponseCode.NON_EXISTING_STUDENT));
+              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.STUDENT_ALREADY_ENROLLED)
+                System.out.println(Stringify.format(ResponseCode.STUDENT_ALREADY_ENROLLED));
+              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.FULL_CLASS)
+                System.out.println(Stringify.format(ResponseCode.FULL_CLASS));
+              break;
 
-      if (command.equals("list")){
-        StudentClassServer.ListClassResponse listResponse = frontend.list();
-        System.out.println(Stringify.format(listResponse.getClassState()));
-      }
-
-      else if (command.equals("enroll")) {
-        StudentClassServer.EnrollResponse enrollResponse = frontend.enroll(id, name);
-        if (enrollResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
+            default:
+              System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
+          }
+        } catch (NullPointerException e) {
+          System.out.println("Error: null pointer caught");
+        }
+        catch (NumberFormatException e) {
+          System.out.println("Error: string given instead of a number");
         }
       }
-      else if (command.equals("exit")) {
-        frontend.close();
-        System.exit(0);
-      }
-      else {
-        System.out.println("Invalid command.");
-      }
-
+    } finally {
       System.out.println("");
     }
   }
+
 }

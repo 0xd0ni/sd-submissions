@@ -20,7 +20,6 @@ public class Admin {
 
 
   public static void main(String[] args) {
-    System.out.println(Admin.class.getSimpleName());
 
     final String host = "localhost";
     final int port = 5000;
@@ -40,6 +39,9 @@ public class Admin {
               DumpResponse dump_res = frontend.setDump(dump_req);
               if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.OK)
                 System.out.println(Stringify.format(frontend.getClassState(dump_res)));
+              else if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+
               break;
 
             case ACTIV_CMD:
@@ -47,6 +49,8 @@ public class Admin {
               ActivateResponse res = frontend.setActivate(req);
               if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.OK)
                 System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
               break;
 
             case DEACT_CMD:
@@ -54,7 +58,12 @@ public class Admin {
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
               if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.OK)
                 System.out.println(Stringify.format(ResponseCode.OK));
+              else if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.INACTIVE_SERVER)
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
               break;
+
+            default:
+              System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
           }
         } catch (NullPointerException e) {
           System.out.println("NULL");

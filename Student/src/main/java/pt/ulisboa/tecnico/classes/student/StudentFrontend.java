@@ -1,35 +1,44 @@
 package pt.ulisboa.tecnico.classes.student;
 
-import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
 public class StudentFrontend implements AutoCloseable {
     private final ManagedChannel channel;
     private final StudentServiceGrpc.StudentServiceBlockingStub stub;
 
     public StudentFrontend(String host, int port) {
-        this.channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
-        this.stub = StudentServiceGrpc.newBlockingStub(channel);
+        // Channel is the abstraction to connect to a service endpoint.
+        // Let us use plaintext communication because we do not have certificates.
+        this.channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+
+        // Create a blocking stub.
+        stub = StudentServiceGrpc.newBlockingStub(channel);
     }
 
-    public StudentClassServer.ListClassResponse list() {
-        StudentClassServer.ListClassRequest listRequest = StudentClassServer.ListClassRequest.newBuilder().build();
-        StudentClassServer.ListClassResponse listResponse = stub.listClass(listRequest);
-        return listResponse;
+    public int getCode(ListClassResponse response) {
+        return response.getCodeValue();
     }
 
-    public StudentClassServer.EnrollResponse enroll(String id, String name) {
-        ClassesDefinitions.Student student = ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build();
-        StudentClassServer.EnrollRequest enrollRequest = StudentClassServer.EnrollRequest.newBuilder().setStudent(student).build();
-        StudentClassServer.EnrollResponse enrollResponse = stub.enroll(enrollRequest);
-        return enrollResponse;
+    public int getCodeE(EnrollResponse response) { return response.getCodeValue(); }
+
+    public ClassState getClassState(ListClassResponse response) {
+        return response.getClassState();
     }
+
+    public ListClassResponse setListClass(ListClassRequest request)
+    {
+        return stub.listClass(request);
+    }
+
+    public EnrollResponse setEnroll(EnrollRequest request) {return stub.enroll(request);}
+
     @Override
     public final void close() {
         channel.shutdown();
     }
+
 }
