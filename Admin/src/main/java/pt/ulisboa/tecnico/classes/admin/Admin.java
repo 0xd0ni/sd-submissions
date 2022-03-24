@@ -8,7 +8,6 @@ import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpRequest;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-
 import java.util.Scanner;
 
 public class Admin {
@@ -20,48 +19,52 @@ public class Admin {
 
 
   public static void main(String[] args) {
-    System.out.println(Admin.class.getSimpleName());
-
     final String host = "localhost";
     final int port = 5000;
 
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
-        System.out.printf("%n> ");
+        System.out.printf("> ");
         try {
           String line = scanner.nextLine();
           switch (line)
           {
             case EXIT_CMD:
+              System.exit(0);
               break;
 
             case DUMP_CMD:
-              DumpRequest dump_req = DumpRequest.newBuilder().build();
-              DumpResponse dump_res = frontend.setDump(dump_req);
-              if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(frontend.getClassState(dump_res)));
+              DumpRequest dumpRequest = DumpRequest.newBuilder().build();
+              DumpResponse dumpResponse = frontend.setDump(dumpRequest);
+
+              ResponseCode responseCode = ResponseCode.forNumber(frontend.getCodeDump(dumpResponse));
+              if (responseCode == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(dumpResponse)));
+              else
+                System.out.println(Stringify.format(responseCode));
               break;
 
             case ACTIV_CMD:
-              ActivateRequest req = ActivateRequest.newBuilder().build();
-              ActivateResponse res = frontend.setActivate(req);
-              if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(ResponseCode.OK));
+              ActivateRequest activateRequest = ActivateRequest.newBuilder().build();
+              ActivateResponse activateResponse = frontend.setActivate(activateRequest);
+
+              ResponseCode activateCode = ResponseCode.forNumber(frontend.getCodeActivate(activateResponse));
+              System.out.println(Stringify.format(activateCode));
               break;
 
             case DEACT_CMD:
-              DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
-              DeactivateResponse d_res = frontend.setDeactivate(d_req);
-              if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(ResponseCode.OK));
+              DeactivateRequest deactivateRequest = DeactivateRequest.newBuilder().build();
+              DeactivateResponse deactivateResponse = frontend.setDeactivate(deactivateRequest);
+
+              ResponseCode deactCode = ResponseCode.forNumber(frontend.getCodeDeactivate(deactivateResponse));
+              System.out.println(Stringify.format(deactCode));
               break;
           }
         } catch (NullPointerException e) {
           System.out.println("NULL");
         }
+        System.out.printf("%n");
       }
-    } finally {
-      System.out.println("");
     }
   }
 

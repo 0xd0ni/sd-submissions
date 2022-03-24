@@ -1,9 +1,8 @@
 package pt.ulisboa.tecnico.classes.student;
 
-import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-
+import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
@@ -15,21 +14,15 @@ public class StudentFrontend implements AutoCloseable {
         this.channel = ManagedChannelBuilder.forAddress(host,port).usePlaintext().build();
         this.stub = StudentServiceGrpc.newBlockingStub(channel);
     }
+    public int getCodeList(StudentClassServer.ListClassResponse response) { return response.getCodeValue(); }
 
-    public StudentClassServer.ListClassResponse list() {
-        StudentClassServer.ListClassRequest listRequest = StudentClassServer.ListClassRequest.newBuilder().build();
-        StudentClassServer.ListClassResponse listResponse = stub.listClass(listRequest);
-        return listResponse;
-    }
+    public int getCodeEnroll(StudentClassServer.EnrollResponse response) { return response.getCodeValue(); }
 
-    public StudentClassServer.EnrollResponse enroll(String id, String name) {
-        ClassesDefinitions.Student student = ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build();
-        StudentClassServer.EnrollRequest enrollRequest = StudentClassServer.EnrollRequest.newBuilder().setStudent(student).build();
-        StudentClassServer.EnrollResponse enrollResponse = stub.enroll(enrollRequest);
-        return enrollResponse;
-    }
+    public StudentClassServer.ListClassResponse list(StudentClassServer.ListClassRequest request) { return stub.listClass(request); }
+
+    public StudentClassServer.EnrollResponse enroll(StudentClassServer.EnrollRequest request) { return stub.enroll(request); }
+
+    public ClassState getClassState(StudentClassServer.ListClassResponse response) { return response.getClassState(); }
     @Override
-    public final void close() {
-        channel.shutdown();
-    }
+    public final void close() { channel.shutdown(); }
 }

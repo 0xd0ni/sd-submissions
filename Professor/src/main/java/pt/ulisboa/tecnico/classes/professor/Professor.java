@@ -1,64 +1,78 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.Stringify;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import java.util.Scanner;
 
 public class Professor {
 
+  private static final String EXIT_CMD = "exit";
+  private static final String LIST_CMD = "list";
+  private static final String OPEN_CMD = "openEnrollments";
+  private static final String CLOSE_CMD = "closeEnrollments";
+  private static final String CANCEL_CMD = "cancelEnrollment";
+
   public static void main(String[] args) {
-    Scanner input = new Scanner(System.in);
+    final String host = "localhost";
+    final int port = 5000;
 
-    ProfessorFrontend frontend = new ProfessorFrontend("localhost", 5000);
+    try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+      while (true) {
+        System.out.printf("> ");
+        try {
+          String line = scanner.nextLine();
+          switch (line)
+          {
+            case EXIT_CMD:
+              System.exit(0);
 
-    while(input.hasNextLine()){
-      System.out.print("> ");
-      System.out.flush();
-      String[] line = input.nextLine().split(" ");
-      String command = line[0];
+              break;
 
-      System.out.println(command);
+            case LIST_CMD:
+              ProfessorClassServer.ListClassRequest listRequest = ProfessorClassServer.ListClassRequest.newBuilder().build();
+              ProfessorClassServer.ListClassResponse listResponse = frontend.list(listRequest);
 
-      if (command.equals("list")){
-        ProfessorClassServer.ListClassResponse listResponse = frontend.list();
-        System.out.println(Stringify.format(listResponse.getClassState()));
-      }
+              ResponseCode responseCode = ResponseCode.forNumber(frontend.getCodeList(listResponse));
+              if (responseCode == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(listResponse)));
+              else
+                System.out.println(Stringify.format(responseCode));
 
-      else if (command.equals("openEnrollments")) {
-        Integer numStudents = Integer.parseInt(line[1]);
-        ProfessorClassServer.OpenEnrollmentsResponse openEnrollmentsResponse = frontend.openEnrollments(numStudents);
-        if (openEnrollmentsResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
+              break;
+
+            case OPEN_CMD:
+              ProfessorClassServer.OpenEnrollmentsRequest openRequest = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().build();
+              ProfessorClassServer.OpenEnrollmentsResponse openResponse = frontend.openEnrollments(openRequest);
+
+              ResponseCode code = ResponseCode.forNumber(frontend.getCodeOpen(openResponse));
+              System.out.println(Stringify.format(code));
+              break;
+
+            case CLOSE_CMD:
+              ProfessorClassServer.CloseEnrollmentsRequest closeRequest = ProfessorClassServer.CloseEnrollmentsRequest.newBuilder().build();
+              ProfessorClassServer.CloseEnrollmentsResponse closeResponse = frontend.closeEnrollments(closeRequest);
+
+              ResponseCode closeCode = ResponseCode.forNumber(frontend.getCodeClose(closeResponse));
+              System.out.println(Stringify.format(closeCode));
+              break;
+
+            case CANCEL_CMD:
+              ProfessorClassServer.CancelEnrollmentRequest cancelRequest = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().build();
+              ProfessorClassServer.CancelEnrollmentResponse cancelResponse = frontend.cancelEnrollment(cancelRequest);
+
+              ResponseCode cancelCode = ResponseCode.forNumber(frontend.getCodeCancel(cancelResponse));
+              System.out.println(Stringify.format(cancelCode));
+
+              break;
+          }
+        } catch (NullPointerException e) {
+          System.out.println("NULL");
         }
-      }
-      else if (command.equals("closeEnrollments")){
-        ProfessorClassServer.CloseEnrollmentsResponse closeEnrollmentsResponse = frontend.closeEnrollments();
-        if (closeEnrollmentsResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
-        }
-      }
-      else if (command.equals("cancelEnrollment")){
-        ProfessorClassServer.CancelEnrollmentResponse cancelEnrollmentResponse = frontend.cancelEnrollment(line[1]);
-        if (cancelEnrollmentResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
-        }
-      }
-      else if (command.equals("exit")) {
-        frontend.close();
-        System.exit(0);
-      }
-      else {
-        System.out.println("Invalid command");
-      }
 
-      System.out.println("");
+        System.out.printf("%n");
+      }
     }
   }
-}
 
+}

@@ -1,17 +1,20 @@
 package pt.ulisboa.tecnico.classes.student;
 import pt.ulisboa.tecnico.classes.Stringify;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import java.util.Scanner;
 
 public class Student {
 
-  static private String name;
-  static private String id;
+  private static final String EXIT_CMD = "exit";
+  private static final String LIST_CMD = "list";
+  private static final String ENROLL_CMD = "enroll";
 
   public static void main(String[] args) {
 
-    //name = "João";
-    //id = "Aluno001";
+    final String host = "localhost";
+    final int port = 5000;
 
     if (args.length < 2) {
       System.err.println("Argument(s) missing!");
@@ -19,47 +22,52 @@ public class Student {
       return;
     }
 
-    id = args[0];
-    name = "";
+    String studentId = args[0];
+    String studentName = "";
     for (int j = 1; j < args.length; j++) {
-      name += args[j];
+      studentName += args[j];
       if (j != args.length - 1)
-        name += " ";
+        studentName += " ";
     }
-    System.out.printf("Student's id %s, and name %s\n", id, name);
 
-    Scanner input = new Scanner(System.in);
+    try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+      while (true) {
+        System.out.printf("> ");
+        try {
+          String line = scanner.nextLine();
+          switch (line)
+          {
+            case EXIT_CMD:
+              System.exit(0);
 
-    StudentFrontend frontend = new StudentFrontend("localhost", 5000);
+              break;
 
-    while(input.hasNextLine()){
-      System.out.print("> ");
-      System.out.flush();
-      String command = input.nextLine();
-      System.out.println(command);
+            case LIST_CMD:
+              StudentClassServer.ListClassRequest listRequest = StudentClassServer.ListClassRequest.newBuilder().build();
+              StudentClassServer.ListClassResponse listResponse = frontend.list(listRequest);
 
-      if (command.equals("list")){
-        StudentClassServer.ListClassResponse listResponse = frontend.list();
-        System.out.println(Stringify.format(listResponse.getClassState()));
-      }
+              ResponseCode responseCode = ResponseCode.forNumber(frontend.getCodeList(listResponse));
+              if (responseCode == ResponseCode.OK)
+                System.out.println(Stringify.format(frontend.getClassState(listResponse)));
+              else
+                System.out.println(Stringify.format(responseCode));
 
-      else if (command.equals("enroll")) {
-        StudentClassServer.EnrollResponse enrollResponse = frontend.enroll(id, name);
-        if (enrollResponse.getCode().getNumber() == 0) {
-          System.out.println("The action completed successfully.");
-        } else {
-          System.out.println("Some error");
+              break;
+
+            case ENROLL_CMD:
+              StudentClassServer.EnrollRequest enrollRequest = StudentClassServer.EnrollRequest.newBuilder().build();
+              StudentClassServer.EnrollResponse enrollResponse = frontend.enroll(enrollRequest);
+
+              ResponseCode code = ResponseCode.forNumber(frontend.getCodeEnroll(enrollResponse));
+              System.out.println(Stringify.format(code));
+              break;
+          }
+        } catch (NullPointerException e) {
+          System.out.println("NULL");
         }
-      }
-      else if (command.equals("exit")) {
-        frontend.close();
-        System.exit(0);
-      }
-      else {
-        System.out.println("Invalid command.");
-      }
 
-      System.out.println("");
+        System.out.printf("%n");
+      }
     }
   }
 }

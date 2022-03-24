@@ -1,10 +1,11 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
+
 
 public class ProfessorFrontend implements AutoCloseable{
     private final ManagedChannel channel;
@@ -15,29 +16,24 @@ public class ProfessorFrontend implements AutoCloseable{
         this.stub = ProfessorServiceGrpc.newBlockingStub(channel);
     }
 
-    public ProfessorClassServer.ListClassResponse list() {
-        ProfessorClassServer.ListClassRequest listRequest = ProfessorClassServer.ListClassRequest.newBuilder().build();
-        ProfessorClassServer.ListClassResponse listResponse = stub.listClass(listRequest);
-        return listResponse;
-    }
+    public int getCodeList(ProfessorClassServer.ListClassResponse response) { return response.getCodeValue(); }
 
-    public ProfessorClassServer.OpenEnrollmentsResponse openEnrollments(int numStudents) {
-        ProfessorClassServer.OpenEnrollmentsRequest openEnrollmentsRequest = ProfessorClassServer.OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
-        ProfessorClassServer.OpenEnrollmentsResponse openEnrollmentsResponse = stub.openEnrollments(openEnrollmentsRequest);
-        return openEnrollmentsResponse;
-    }
+    public int getCodeOpen(ProfessorClassServer.OpenEnrollmentsResponse response) { return response.getCodeValue(); }
 
-    public ProfessorClassServer.CloseEnrollmentsResponse closeEnrollments() {
-        ProfessorClassServer.CloseEnrollmentsRequest closeEnrollmentsRequest = ProfessorClassServer.CloseEnrollmentsRequest.newBuilder().build();
-        ProfessorClassServer.CloseEnrollmentsResponse closeEnrollmentsResponse = stub.closeEnrollments(closeEnrollmentsRequest);
-        return closeEnrollmentsResponse;
-    }
+    public int getCodeClose(ProfessorClassServer.CloseEnrollmentsResponse response) { return response.getCodeValue(); }
 
-    public ProfessorClassServer.CancelEnrollmentResponse cancelEnrollment(String sid) {
-        ProfessorClassServer.CancelEnrollmentRequest cancelEnrollmentRequest = ProfessorClassServer.CancelEnrollmentRequest.newBuilder().setStudentId(sid).build();
-        ProfessorClassServer.CancelEnrollmentResponse cancelEnrollmentResponse = stub.cancelEnrollment(cancelEnrollmentRequest);
-        return cancelEnrollmentResponse;
-    }
+    public int getCodeCancel(ProfessorClassServer.CancelEnrollmentResponse response) { return response.getCodeValue(); }
+
+    public ProfessorClassServer.ListClassResponse list(ProfessorClassServer.ListClassRequest request) { return stub.listClass(request); }
+
+    public ProfessorClassServer.OpenEnrollmentsResponse openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request) { return stub.openEnrollments(request); }
+
+    public ProfessorClassServer.CloseEnrollmentsResponse closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest request) { return stub.closeEnrollments(request); }
+
+    public ProfessorClassServer.CancelEnrollmentResponse cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest request) { return stub.cancelEnrollment(request); }
+
+    public ClassState getClassState(ProfessorClassServer.ListClassResponse response) { return response.getClassState(); }
+
     @Override
     public final void close() {
         channel.shutdown();
