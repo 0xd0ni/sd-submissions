@@ -46,14 +46,14 @@ public class Admin {
               ActivateRequest req = ActivateRequest.newBuilder().build();
               ActivateResponse res = frontend.setActivate(req);
               if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.OK)
-                System.out.println("The action completed successfully.");
+                System.out.println(Stringify.format(ResponseCode.OK));
               break;
 
             case DEACT_CMD:
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
               if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.OK)
-                System.out.println("The action completed successfully.");
+                System.out.println(Stringify.format(ResponseCode.OK));
               break;
           }
         } catch (NullPointerException e) {
