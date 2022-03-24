@@ -3,12 +3,20 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
 
+import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 
 import java.util.stream.Stream;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
+
+    private ClassState _class;
+
+    public ProfessorServiceImpl(ClassState _class) {
+        this._class = _class;
+    }
 
     // TODO
 
