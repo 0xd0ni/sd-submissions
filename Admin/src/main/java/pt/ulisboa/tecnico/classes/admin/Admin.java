@@ -26,7 +26,7 @@ public class Admin {
 
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
-        System.out.printf("%n> ");
+        System.out.printf("> ");
         try {
           String line = scanner.nextLine();
           switch (line) {
@@ -38,23 +38,23 @@ public class Admin {
               DumpRequest dump_req = DumpRequest.newBuilder().build();
               DumpResponse dump_res = frontend.setDump(dump_req);
               if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(frontend.getClassState(dump_res)));
+                System.out.println(Stringify.format(frontend.getClassState(dump_res))+"\n");
               else if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
 
             case ACTIV_CMD -> {
               ActivateRequest req = ActivateRequest.newBuilder().build();
               ActivateResponse res = frontend.setActivate(req);
-              System.out.println(Stringify.format(res.getCode())+'\n');
+              System.out.println(Stringify.format(res.getCode())+"\n");
             }
             case DEACT_CMD -> {
 
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
-              System.out.println(Stringify.format(d_res.getCode())+'\n');
+              System.out.println(Stringify.format(d_res.getCode())+"\n");
             }
-            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
+            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");
           }
         } catch (NullPointerException e) {
           System.err.println("Error: null pointer caught");
