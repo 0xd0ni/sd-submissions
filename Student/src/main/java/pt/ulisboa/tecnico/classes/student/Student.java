@@ -36,8 +36,9 @@ public class Student {
     }
 
     try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+
       while (true) {
-        System.out.printf("%n> ");
+        System.out.printf("> ");
         try {
           String[] line = scanner.nextLine().split(" ");
           switch (line[0]) {
@@ -47,16 +48,17 @@ public class Student {
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
               if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(frontend.getClassState(list_res)));
+                System.out.println(Stringify.format(frontend.getClassState(list_res))+"\n");
               else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
             case E_CMD -> {
-              EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
+              EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(
+                      ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
               EnrollResponse e_res = frontend.setEnroll(e_req);
-              System.out.println(Stringify.format(e_res.getCode())+'\n');
+              System.out.println(Stringify.format(e_res.getCode())+"\n");
             }
-            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
+            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");
           }
         } catch (NullPointerException e) {
           System.err.println("Error: null pointer caught");
