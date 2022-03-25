@@ -2,17 +2,14 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 
 import io.grpc.stub.StreamObserver;
-
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
-import pt.ulisboa.tecnico.classes.classserver.exception.ClassesException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
-import pt.ulisboa.tecnico.classes.classserver.exception.ArgumentsValidation;
-import pt.ulisboa.tecnico.classes.Stringify;
 
-import static io.grpc.Status.INVALID_ARGUMENT;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
@@ -29,112 +26,114 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         Integer capacity = request.getCapacity();
 
-        try{
-            alreadyOpened();
-            validCapacity(capacity);
-            _class.setCapacity(capacity.intValue());
-            _class.setOpenEnrollments(true);
+
+
+        if(_class.getOpenEnrollments()) {
             ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_OPENED).build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         }
-        catch(ClassesException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+        if(capacity <= 0) {
+            ProfessorClassServer.OpenEnrollmentsResponse response =
+                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.UNRECOGNIZED).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
 
         }
+
+
+        _class.setCapacity(capacity.intValue());
+        _class.setOpenEnrollments(true);
+        ProfessorClassServer.OpenEnrollmentsResponse response =
+                ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+
+
     }
 
     @Override
-    public void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest closeRequest,
+    public synchronized void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest closeRequest,
                                  StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
 
-        try{
-            alreadyClosed();
-            _class.setOpenEnrollments(false);
+        if(!_class.getOpenEnrollments()) {
 
             ProfessorClassServer.CloseEnrollmentsResponse response =
-                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED).build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         }
-        catch (ClassesException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
-        }
+
+        _class.setOpenEnrollments(false);
+
+        ProfessorClassServer.CloseEnrollmentsResponse response =
+                ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+        
+
     }
 
+
     @Override
-    public void listClass(ProfessorClassServer.ListClassRequest listRequest,
+    public synchronized void listClass(ProfessorClassServer.ListClassRequest listRequest,
                           StreamObserver<ProfessorClassServer.ListClassResponse> responseObserver) {
 
 
-        //ProfessorClassServer.ListClassResponse response = ProfessorClassServer.ListClassResponse.newBuilder().setCode(
-        //        ClassesDefinitions.ResponseCode.OK).setClassState().build();
+        ProfessorClassServer.ListClassResponse response = ProfessorClassServer.ListClassResponse.newBuilder().setCode(
+              ClassesDefinitions.ResponseCode.OK).setClassState(
+                      ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
+                              _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
+                                      _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
+                                              _class.getDiscarded()))).build();
 
 
-        //responseObserver.onNext(response);
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
 
     }
 
     @Override
-    public  void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest cancelRequest,
+    public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest cancelRequest,
                                   StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
 
         String studentId = cancelRequest.getStudentId();
 
-        try{
 
-            CheckForUserExistence(studentId);
-            Student student = _class.getRegistered().get(studentId);
-            _class.getEnrolled().remove(student);
-            _class.getRegistered().remove(studentId);
-            _class.addDiscard(student);
-
+        if(!Utils.CheckForUserExistence(studentId,_class)) {
 
             ProfessorClassServer.CancelEnrollmentResponse response =
-                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT).build();
 
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
-        } catch (ClassesException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
         }
+        Student student = _class.getRegistered().get(studentId);
+        _class.getEnrolled().remove(student);
+        _class.getRegistered().remove(studentId);
+        _class.addDiscard(student);
 
 
-    }
+        ProfessorClassServer.CancelEnrollmentResponse response =
+                ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
 
-    // error handling methods ( // To refactor)
 
-    public void validCapacity(int capacity) throws ClassesException {
-        if(capacity <= 0) {
-            throw new ClassesException(ArgumentsValidation.INVALID_CAPACITY.label);
-        }
-    }
-
-    public void alreadyClosed() throws ClassesException {
-        if(!_class.getOpenEnrollments()) {
-            throw new ClassesException(Stringify.format(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED));
-        }
-    }
-
-    public void alreadyOpened() throws  ClassesException {
-        if(_class.getOpenEnrollments()) {
-            throw new ClassesException(Stringify.format(ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_OPENED));
-        }
-    }
-
-    public void CheckForUserExistence(String studentId) throws ClassesException {
-
-        if(!_class.getRegistered().containsKey(studentId)) {
-            throw new ClassesException(Stringify.format(ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT));
-        }
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
 
     }
 
