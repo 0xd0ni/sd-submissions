@@ -24,7 +24,12 @@ public class Utils {
         List<ClassesDefinitions.Student> toSend = new ArrayList<>();
 
         for(Student student: studentList) {
-            toSend.add(WrapTo(student));
+            if(student == null){
+
+
+            } else {
+                toSend.add(WrapTo(student));
+            }
         }
 
         return toSend;
@@ -32,6 +37,7 @@ public class Utils {
 
 
     public static ClassesDefinitions.Student WrapTo(Student student) {
+
 
         ClassesDefinitions.Student studentToSend =
                 ClassesDefinitions.Student.newBuilder().setStudentId(
