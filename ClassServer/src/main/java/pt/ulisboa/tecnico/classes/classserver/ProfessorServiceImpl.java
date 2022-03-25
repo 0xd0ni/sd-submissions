@@ -8,8 +8,6 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 
-import java.util.ArrayList;
-import java.util.List;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
@@ -109,20 +107,37 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
     public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest cancelRequest,
                                   StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
 
-        String studentId = cancelRequest.getStudentId();
+        try {
 
-        if(!Utils.CheckStudentId(studentId)) {
+            String studentId = cancelRequest.getStudentId();
+            if(!Utils.CheckForUserExistence(studentId,_class)) {
+
+                ProfessorClassServer.CancelEnrollmentResponse response =
+                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
+                                ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT).build();
+
+
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+
+            }
+
+            Student student = _class.getRegistered().get(studentId);
+            _class.getEnrolled().remove(student);
+            _class.getRegistered().remove(studentId);
+            _class.addDiscard(student);
+            _class.downEnrolled();
+
 
             ProfessorClassServer.CancelEnrollmentResponse response =
-                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.UNRECOGNIZED).build();
+                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
-        }
 
-        else if(!Utils.CheckForUserExistence(studentId,_class)) {
+        }catch(NullPointerException e) {
 
             ProfessorClassServer.CancelEnrollmentResponse response =
                     ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
@@ -133,19 +148,10 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
             responseObserver.onCompleted();
 
         }
-        Student student = _class.getRegistered().get(studentId);
-        _class.getEnrolled().remove(student);
-        _class.getRegistered().remove(studentId);
-        _class.addDiscard(student);
-        _class.downEnrolled();
+        catch(IllegalStateException e){
+            System.out.printf("");
+        }
 
-
-        ProfessorClassServer.CancelEnrollmentResponse response =
-                ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
-
-
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
 
     }
 
