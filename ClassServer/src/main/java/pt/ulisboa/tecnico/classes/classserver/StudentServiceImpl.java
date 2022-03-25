@@ -44,25 +44,36 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         String studentName = toEnroll.getStudentName();
         String studentId = toEnroll.getStudentId();
 
-
         Student student = new Student(studentId,studentName);
 
-        // verifies if the student is already enrolled
-        // and informs the client
-        if(Utils.CheckForUserExistence(studentId,_class)) {
+        if(!_class.getOpenEnrollments()) {
+            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED).build());
+            responseObserver.onCompleted();
+
+
+        }
+        else if(Utils.CheckForUserExistence(studentId,_class)) {
             responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
                     ClassesDefinitions.ResponseCode.STUDENT_ALREADY_ENROLLED).build());
             responseObserver.onCompleted();
 
 
         }
+        else if(_class.checkForFullCapacity()) {
+            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.FULL_CLASS).build());
+            responseObserver.onCompleted();
+        }
+        else {
+            _class.addEnroll(student);
+            _class.addToRegistry(studentId, student);
+            _class.upEnrolled();
 
-        _class.addEnroll(student);
-        _class.addToRegistry(studentId,student);
-
-        responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                ClassesDefinitions.ResponseCode.OK).build());
-        responseObserver.onCompleted();
+            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.OK).build());
+            responseObserver.onCompleted();
+        }
 
     }
 

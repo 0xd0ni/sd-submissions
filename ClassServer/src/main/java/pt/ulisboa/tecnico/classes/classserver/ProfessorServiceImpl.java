@@ -50,6 +50,7 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         _class.setCapacity(capacity.intValue());
         _class.setOpenEnrollments(true);
+        _class.setCurrentCapacity(0);
         ProfessorClassServer.OpenEnrollmentsResponse response =
                 ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
 
@@ -110,8 +111,18 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         String studentId = cancelRequest.getStudentId();
 
+        if(!Utils.CheckStudentId(studentId)) {
 
-        if(!Utils.CheckForUserExistence(studentId,_class)) {
+            ProfessorClassServer.CancelEnrollmentResponse response =
+                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.UNRECOGNIZED).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+
+        else if(!Utils.CheckForUserExistence(studentId,_class)) {
 
             ProfessorClassServer.CancelEnrollmentResponse response =
                     ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
@@ -126,6 +137,7 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         _class.getEnrolled().remove(student);
         _class.getRegistered().remove(studentId);
         _class.addDiscard(student);
+        _class.downEnrolled();
 
 
         ProfessorClassServer.CancelEnrollmentResponse response =

@@ -12,6 +12,8 @@ public class ClassState {
 
     private int capacity;
 
+    private int currentCapacity;
+
     private boolean openEnrollments;
 
     private List<Student> enrolled;
@@ -87,6 +89,33 @@ public class ClassState {
     public ConcurrentHashMap<String, Student> getRegistered() {
         return registered;
     }
+
+    public int getCurrentCapacity() {
+        return currentCapacity;
+    }
+
+    public void upEnrolled() {
+        currentCapacity += 1;
+
+    }
+
+    public void downEnrolled() {
+        if(currentCapacity == 0) {
+            currentCapacity = 0;
+        }
+        currentCapacity -= 1;
+
+    }
+
+    public boolean checkForFullCapacity() {
+        return currentCapacity >= getCapacity();
+
+    }
+
+    public void setCurrentCapacity(int value) {
+        currentCapacity = value;
+    }
+
 }
 
 

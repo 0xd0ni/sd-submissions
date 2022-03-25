@@ -9,10 +9,13 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
+import pt.ulisboa.tecnico.classes.classserver.exception.SmallNumberException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Utils {
 
@@ -42,5 +45,43 @@ public class Utils {
         return state.getRegistered().containsKey(studentId);
 
     }
+
+    public static boolean CheckStudentId(String Id){
+        try {
+            if (!Id.substring(0, 4).equals("aluno"))
+            {
+                System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of " + Id);
+                return false;
+            }
+
+            if (Id.substring(5).length() != 4)
+                throw new SmallNumberException();
+
+            Integer.parseInt(Id.substring(5));
+            return true;
+
+        } catch (NumberFormatException e) {
+            System.err.println("Error: wrong format for student ID, write a number with 4 digits");
+            return false;
+        }
+        catch (StringIndexOutOfBoundsException e)
+        {
+            System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of "+Id);
+            return false;
+        }
+        catch (SmallNumberException e)
+        {
+            System.err.println("Error: wrong format for student ID, number must have 4 digits");
+            return false;
+        }
+    }
+
+    public static boolean CheckStudentName(String studentName){
+        return studentName.matches("/^[A-Z]+[a-z]*{3,30}$/");
+
+    }
+
+
+
 
 }
