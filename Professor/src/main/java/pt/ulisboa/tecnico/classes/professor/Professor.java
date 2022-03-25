@@ -52,8 +52,6 @@ public class Professor {
               System.out.println(Stringify.format(ce_res.getCode())+"\n");
             }
             case CAN_ENR_CMD -> {
-              if (!frontend.checkStudentId(line[1]))
-                break;
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
               CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
               System.out.println(Stringify.format(c_res.getCode())+"\n");
