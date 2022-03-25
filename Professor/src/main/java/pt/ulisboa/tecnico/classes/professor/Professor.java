@@ -24,7 +24,7 @@ public class Professor {
 
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
-        System.out.printf("%n> ");
+        System.out.printf("> ");
         try {
           String[] line = scanner.nextLine().split(" ");
           switch (line[0]) {
@@ -34,31 +34,31 @@ public class Professor {
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
               if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(frontend.getClassState(list_res)));
+                System.out.println(Stringify.format(frontend.getClassState(list_res))+"\n");
               else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
 
             case OE_CMD -> {
               int numStudents = Integer.parseInt(line[1]);
               OpenEnrollmentsRequest oe_req = OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
               OpenEnrollmentsResponse oe_res = frontend.setOE(oe_req);
-              System.out.println(Stringify.format(oe_res.getCode())+'\n');
+              System.out.println(Stringify.format(oe_res.getCode())+"\n");
             }
 
             case CE_CMD -> {
               CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
               CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
-              System.out.println(Stringify.format(ce_res.getCode())+'\n');
+              System.out.println(Stringify.format(ce_res.getCode())+"\n");
             }
             case CAN_ENR_CMD -> {
               if (!frontend.checkStudentId(line[1]))
                 break;
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
               CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
-              System.out.println(Stringify.format(c_res.getCode())+'\n');
+              System.out.println(Stringify.format(c_res.getCode())+"\n");
             }
-            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
+            default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");
           }
         } catch (NullPointerException e) {
           System.err.println("Error: null pointer caught");
