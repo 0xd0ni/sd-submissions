@@ -13,51 +13,49 @@ public class ClassServer {
   private static String host;
   private static String serverFlag;
 
-  public static void main(String[] args) throws IOException, InterruptedException {
 
-    System.out.println(ClassServer.class.getSimpleName());
-    System.out.printf("Received %d Argument(s)%n", args.length);
-    for (int i = 0; i < args.length; i++) {
-      System.out.printf("args[%d] = %s%n", i, args[i]);
+      public static void main(String[] args) throws IOException, InterruptedException {
 
-    }
+        System.out.println(ClassServer.class.getSimpleName());
+        System.out.printf("Received %d Argument(s)%n", args.length);
+        for (int i = 0; i < args.length; i++) {
+          System.out.printf("args[%d] = %s%n", i, args[i]);
 
-    if (args.length < 2) {
-      System.err.println("Argument(s) missing!");
-      System.err.printf("Usage: java %s port%n", ClassServer.class.getName());
-      return;
-    }
+        }
 
+        if (args.length < 2) {
+          System.err.println("Argument(s) missing!");
+          System.err.printf("Usage: java %s port%n", ClassServer.class.getName());
+          return;
+        }
 
-    host = args[0];
-    port = Integer.valueOf(args[1]);
-    serverFlag = args[2];
+        try {
 
-    try {
-
-      ClassState _class = new ClassState();
-
-      // Create a new server with multiple services to listen on port.
-      Server server = ServerBuilder.forPort(port).addService(new AdminServiceImpl(_class)).addService(
-              new ProfessorServiceImpl(_class)).addService(new StudentServiceImpl(_class)).build();
-
-      // Start the server.
-      server.start();
-
-      System.out.println("Server started");
-
-      // Wait for server termination.
-      server.awaitTermination();
+          host = args[0];
+          port = Integer.parseInt(args[1]);;
+          serverFlag = args[2];
 
 
+        } catch (NumberFormatException e) {
+            System.err.println("Error: string given instead of a number");
+            System.exit(-1);
+        }
 
-    }
-    catch(IOException e) {
-      System.err.println("Server - I/O Exception, fail");
-    }
-    catch(InterruptedException e) {
-      System.err.println("Server - Interrupted Exception, fail");
-    }
+
+        ClassState _class = new ClassState();
+
+        // Create a new server with multiple services to listen on port.
+        Server server = ServerBuilder.forPort(port).addService(new AdminServiceImpl(_class)).addService(
+                new ProfessorServiceImpl(_class)).addService(new StudentServiceImpl(_class)).build();
+
+        // Start the server.
+        server.start();
+
+        System.out.println("Server started");
+
+        // Wait for server termination.
+        server.awaitTermination();
 
   }
+
 }
