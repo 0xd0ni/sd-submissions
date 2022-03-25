@@ -34,7 +34,6 @@ public class Student {
       if (j != args.length - 1)
         name += " ";
     }
-    System.out.printf("Student's id %s, and name %s\n", id, name);
 
     try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
@@ -55,16 +54,7 @@ public class Student {
             case E_CMD -> {
               EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
               EnrollResponse e_res = frontend.setEnroll(e_req);
-              if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(ResponseCode.OK));
-              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
-              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.NON_EXISTING_STUDENT)
-                System.out.println(Stringify.format(ResponseCode.NON_EXISTING_STUDENT));
-              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.STUDENT_ALREADY_ENROLLED)
-                System.out.println(Stringify.format(ResponseCode.STUDENT_ALREADY_ENROLLED));
-              else if (ResponseCode.forNumber(frontend.getCodeE(e_res)) == ResponseCode.FULL_CLASS)
-                System.out.println(Stringify.format(ResponseCode.FULL_CLASS));
+              System.out.println(Stringify.format(e_res.getCode())+'\n');
             }
             default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
           }

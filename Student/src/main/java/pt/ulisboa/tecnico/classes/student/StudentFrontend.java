@@ -6,6 +6,7 @@ import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
+
 public class StudentFrontend implements AutoCloseable {
     private final ManagedChannel channel;
     private final StudentServiceGrpc.StudentServiceBlockingStub stub;
@@ -35,6 +36,36 @@ public class StudentFrontend implements AutoCloseable {
     }
 
     public EnrollResponse setEnroll(EnrollRequest request) { return stub.enroll(request); }
+
+    public boolean checkStudentId(String Id){
+        try {
+            if (!Id.substring(0, 4).equals("aluno"))
+            {
+                System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of " + Id);
+                return false;
+            }
+
+            if (Id.substring(5).length() != 4)
+                throw new SmallNumberException();
+
+            Integer.parseInt(Id.substring(5));
+            return true;
+
+        } catch (NumberFormatException e) {
+            System.err.println("Error: wrong format for student ID, write a number with 4 digits");
+            return false;
+        }
+        catch (StringIndexOutOfBoundsException e)
+        {
+            System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of "+Id);
+            return false;
+        }
+        catch (SmallNumberException e)
+        {
+            System.err.println("Error: wrong format for student ID, number must have 4 digits");
+            return false;
+        }
+    }
 
     @Override
     public final void close() {

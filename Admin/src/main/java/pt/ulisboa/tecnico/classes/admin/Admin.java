@@ -46,23 +46,13 @@ public class Admin {
             case ACTIV_CMD -> {
               ActivateRequest req = ActivateRequest.newBuilder().build();
               ActivateResponse res = frontend.setActivate(req);
-
-              if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(ResponseCode.OK));
-
-              else if (ResponseCode.forNumber(frontend.getCode(res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              System.out.println(Stringify.format(res.getCode())+'\n');
             }
             case DEACT_CMD -> {
 
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
-
-              if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.OK)
-                System.out.println(Stringify.format(ResponseCode.OK));
-
-              else if (ResponseCode.forNumber(frontend.getCodeD(d_res)) == ResponseCode.INACTIVE_SERVER)
-                System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER));
+              System.out.println(Stringify.format(d_res.getCode())+'\n');
             }
             default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED));
           }
