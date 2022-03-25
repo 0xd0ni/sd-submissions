@@ -2,17 +2,11 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 
 import io.grpc.stub.StreamObserver;
-import static io.grpc.Status.INVALID_ARGUMENT;
-
-import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
-import pt.ulisboa.tecnico.classes.classserver.exception.ClassesException;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
-
-
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
+import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
 
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
@@ -25,20 +19,19 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
     }
 
 
-
-
     @Override
     public void listClass(StudentClassServer.ListClassRequest listClassRequest,
                           StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
 
+        StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
+                ClassesDefinitions.ResponseCode.OK).setClassState(
+                ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
+                        _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
+                        _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
+                        _class.getDiscarded()))).build();
 
 
-
-        //StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
-        //        ClassesDefinitions.ResponseCode.OK).setClassState().build();
-
-
-        //responseObserver.onNext(response);
+        responseObserver.onNext(response);
         responseObserver.onCompleted();
 
     }
@@ -51,23 +44,25 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         String studentName = toEnroll.getStudentName();
         String studentId = toEnroll.getStudentId();
 
-        
-        try { 
-            Student student = new Student(studentId,studentName);
 
-            // verifies if the student is already enrolled
-            _class.containsStudent(student);
+        Student student = new Student(studentId,studentName);
 
-            _class.addEnroll(student);
-            _class.addToRegistry(studentId,student);
-
+        // verifies if the student is already enrolled
+        // and informs the client
+        if(Utils.CheckForUserExistence(studentId,_class)) {
             responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.OK).build());
+                    ClassesDefinitions.ResponseCode.STUDENT_ALREADY_ENROLLED).build());
             responseObserver.onCompleted();
 
-        } catch (ClassesException e) {
-            responseObserver.onError(INVALID_ARGUMENT.withDescription(e.getMessage()).asRuntimeException());
+
         }
+
+        _class.addEnroll(student);
+        _class.addToRegistry(studentId,student);
+
+        responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
+                ClassesDefinitions.ResponseCode.OK).build());
+        responseObserver.onCompleted();
 
     }
 
