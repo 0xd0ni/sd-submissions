@@ -1,2 +1,23 @@
 syntax = "proto3";
 package pt.ulisboa.tecnico.classes.contract.naming;
+
+
+
+message registerRequest {
+  string serviceName = 1;
+  string hostPort = 2;
+  repeated string qualifiers = 3;
+
+}
+
+
+message registerResponse {
+
+}
+
+
+service NamingServerService {
+  
+
+}
+
