@@ -8,13 +8,18 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 
+import java.util.logging.Logger;
 
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
 
-    private ClassState _class;
 
-    public StudentServiceImpl(ClassState _class) {
+    private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
+    private ClassState _class;
+    private final boolean DEBUG_VALUE;
+
+    public StudentServiceImpl(ClassState _class, boolean debugValue) {
         this._class = _class;
+        this.DEBUG_VALUE = debugValue;
 
     }
 
@@ -22,6 +27,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
     @Override
     public void listClass(StudentClassServer.ListClassRequest listClassRequest,
                           StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
+        debug("listClass...");
 
         StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
                 ClassesDefinitions.ResponseCode.OK).setClassState(
@@ -39,6 +45,8 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
     @Override
     public  void enroll(StudentClassServer.EnrollRequest enrollRequest,
                         StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
+
+        debug("enroll...");
 
         ClassesDefinitions.Student toEnroll = enrollRequest.getStudent();
         String studentName = toEnroll.getStudentName();
@@ -75,6 +83,12 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
             responseObserver.onCompleted();
         }
 
+    }
+
+    public void debug(String msg) {
+        if(DEBUG_VALUE) {
+            LOGGER.info(msg);
+        }
     }
 
 }
