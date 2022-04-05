@@ -1,0 +1,18 @@
+syntax = "proto3";
+package pt.ulisboa.tecnico.classes.contract;
+
+message LookupRequest
+{
+  string service = 1;
+  repeated string qualifiers = 2;
+}
+
+message LookupResponse
+{
+  message ServerInfo{
+    string address = 1;
+    repeated string qualifiers = 2;
+  }
+  repeated ServerInfo servers = 1;
+}
+

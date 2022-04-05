@@ -2,6 +2,7 @@ syntax = "proto3";
 package pt.ulisboa.tecnico.classes.contract.professor;
 
 import "ClassesDefinitions.proto";
+import "Lookup.proto";
 
 // Professor -> ClassServer Service
 
@@ -39,4 +40,5 @@ service ProfessorService {
   rpc closeEnrollments(CloseEnrollmentsRequest) returns (CloseEnrollmentsResponse);
   rpc listClass(ListClassRequest) returns (ListClassResponse);
   rpc cancelEnrollment(CancelEnrollmentRequest) returns (CancelEnrollmentResponse);
+  rpc lookup(LookupRequest) returns (LookupResponse);
 }

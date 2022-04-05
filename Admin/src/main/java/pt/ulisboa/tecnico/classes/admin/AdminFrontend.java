@@ -6,10 +6,15 @@ import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRespon
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateResponse;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpRequest;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class AdminFrontend implements AutoCloseable {
     private final ManagedChannel channel;
@@ -48,6 +53,11 @@ public class AdminFrontend implements AutoCloseable {
     public DeactivateResponse setDeactivate(DeactivateRequest request)
     {
         return stub.deactivate(request);
+    }
+
+    public LookupResponse setLookup(LookupRequest request)
+    {
+        return stub.lookup(request);
     }
 
     public DumpResponse setDump(DumpRequest request)
