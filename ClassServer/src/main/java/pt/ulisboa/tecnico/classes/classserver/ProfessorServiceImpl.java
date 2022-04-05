@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
 
-    private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ProfessorServiceImpl.class.getName());
     private ClassState _class;
     private final boolean DEBUG_VALUE;
 

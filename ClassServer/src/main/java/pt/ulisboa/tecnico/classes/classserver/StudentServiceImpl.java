@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
 
 
-    private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(StudentServiceImpl.class.getName());
     private ClassState _class;
     private final boolean DEBUG_VALUE;
 
@@ -22,7 +22,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         this.DEBUG_VALUE = debugValue;
 
     }
-    
+
     @Override
     public void listClass(StudentClassServer.ListClassRequest listClassRequest,
                           StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
