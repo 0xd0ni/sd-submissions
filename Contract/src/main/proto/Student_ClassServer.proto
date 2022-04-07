@@ -2,6 +2,7 @@ syntax = "proto3";
 package pt.ulisboa.tecnico.classes.contract.student;
 
 import "ClassesDefinitions.proto";
+import "Lookup.proto";
 
 // Student -> ClassServer Service
 
@@ -23,4 +24,5 @@ message EnrollResponse {
 service StudentService {
   rpc listClass(ListClassRequest) returns (ListClassResponse);
   rpc enroll(EnrollRequest) returns (EnrollResponse);
+  rpc lookup(LookupRequest) returns (LookupResponse);
 }

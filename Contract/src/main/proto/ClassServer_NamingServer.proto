@@ -19,5 +19,4 @@ message registerResponse {
 
 service NamingServerService {
 
-
 }

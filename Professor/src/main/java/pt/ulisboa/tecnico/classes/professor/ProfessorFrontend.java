@@ -2,13 +2,17 @@ package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.contract.Lookup;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 
 public class ProfessorFrontend implements AutoCloseable {
     private final ManagedChannel channel;
+    private ManagedChannel channel_specific;
     private final ProfessorServiceGrpc.ProfessorServiceBlockingStub stub;
+    private ProfessorServiceGrpc.ProfessorServiceBlockingStub stub_specific;
 
     public ProfessorFrontend(String host, int port) {
         // Channel is the abstraction to connect to a service endpoint.
@@ -17,6 +21,11 @@ public class ProfessorFrontend implements AutoCloseable {
 
         // Create a blocking stub.
         stub = ProfessorServiceGrpc.newBlockingStub(channel);
+    }
+
+    public void setupSpecificServer(String host,int port) {
+        this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+        this.stub_specific = ProfessorServiceGrpc.newBlockingStub(channel_specific);
     }
 
     public int getCode(ListClassResponse response) {
@@ -33,10 +42,10 @@ public class ProfessorFrontend implements AutoCloseable {
 
     public OpenEnrollmentsResponse setOE(OpenEnrollmentsRequest request)
     {
-        return stub.openEnrollments(request);
+        return stub_specific.openEnrollments(request);
     }
 
-    public CloseEnrollmentsResponse setCE(CloseEnrollmentsRequest request) {return stub.closeEnrollments(request);}
+    public CloseEnrollmentsResponse setCE(CloseEnrollmentsRequest request) {return stub_specific.closeEnrollments(request);}
 
     public int getCodeCE(CloseEnrollmentsResponse response) {
         return response.getCodeValue();
@@ -44,10 +53,15 @@ public class ProfessorFrontend implements AutoCloseable {
 
     public ListClassResponse setListClass(ListClassRequest request)
     {
-        return stub.listClass(request);
+        return stub_specific.listClass(request);
     }
 
-    public CancelEnrollmentResponse setCanEnr(CancelEnrollmentRequest request) { return stub.cancelEnrollment(request);}
+    public Lookup.LookupResponse setLookup(Lookup.LookupRequest request)
+    {
+        return stub.lookup(request);
+    }
+
+    public CancelEnrollmentResponse setCanEnr(CancelEnrollmentRequest request) { return stub_specific.cancelEnrollment(request);}
 
     public int getCodeCanEnr(CancelEnrollmentResponse response) {
         return response.getCodeValue();
@@ -86,5 +100,7 @@ public class ProfessorFrontend implements AutoCloseable {
     @Override
     public final void close() {
         channel.shutdown();
+        channel_specific.shutdown();
     }
+
 }

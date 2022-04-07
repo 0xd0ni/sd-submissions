@@ -2,6 +2,7 @@ syntax = "proto3";
 package pt.ulisboa.tecnico.classes.contract.admin;
 
 import "ClassesDefinitions.proto";
+import "Lookup.proto";
 
 message ActivateRequest {}
 
@@ -47,4 +48,5 @@ service AdminService {
   rpc deactivateGossip(DeactivateGossipRequest) returns (DeactivateGossipResponse);
   rpc gossip(GossipRequest) returns (GossipResponse);
   rpc dump(DumpRequest) returns (DumpResponse);
+  rpc lookup(LookupRequest) returns (LookupResponse);
 }

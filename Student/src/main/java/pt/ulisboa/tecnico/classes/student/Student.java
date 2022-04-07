@@ -5,7 +5,13 @@ import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
+import pt.ulisboa.tecnico.classes.LookupUtils;
+import pt.ulisboa.tecnico.classes.contract.Lookup;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
 
 public class Student {
 
@@ -14,12 +20,18 @@ public class Student {
   private static final String EXIT_CMD = "exit";
   private static final String LIST_CMD = "list";
   private static final String E_CMD = "enroll";
+  private static final String LOOK_CMD = "lookup";
 
 
   public static void main(String[] args) {
 
-    final String host = "localhost";
-    final int port = 5000;
+    String host = "localhost";
+    int port = 5000;
+
+    HashMap<String, ArrayList<LookupResponse.ServerInfo>> servers = new HashMap<>();
+    int p_count = 0;
+    int s_count = 0;
+    LookupUtils look = new LookupUtils();
 
     if (args.length < 2) {
       System.err.println("Argument(s) missing!");
@@ -45,6 +57,13 @@ public class Student {
             case EXIT_CMD -> System.exit(0);
 
             case LIST_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"");
+              frontend.setupSpecificServer(address,port_server);
+
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
               if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
@@ -52,7 +71,27 @@ public class Student {
               else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
                 System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
+
+            case LOOK_CMD -> {
+              ArrayList<String> qualifiers = new ArrayList<>();
+              qualifiers.add(args[2]);
+
+              LookupRequest req = Lookup.LookupRequest.newBuilder().setService(args[1]).
+                      setQualifiers(0,"").addAllQualifiers(qualifiers).build();
+              LookupResponse res = frontend.setLookup(req);
+
+              res.getServersList().stream().map(server -> servers.get(args[1]).add(server));
+              System.out.println(Stringify.format(res.getCode())+"\n");
+            }
+
             case E_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
+              frontend.setupSpecificServer(address,port_server);
+
               EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(
                       ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
               EnrollResponse e_res = frontend.setEnroll(e_req);
