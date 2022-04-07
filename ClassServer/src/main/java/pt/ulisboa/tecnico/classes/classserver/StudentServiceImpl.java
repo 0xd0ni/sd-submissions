@@ -5,20 +5,31 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
+import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 
 import java.util.logging.Logger;
 
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
 
-
     private static final Logger LOGGER = Logger.getLogger(StudentServiceImpl.class.getName());
+
+    private ServerInstance server;
+
     private ClassState _class;
+
     private final boolean DEBUG_VALUE;
 
-    public StudentServiceImpl(ClassState _class, boolean debugValue) {
+    public StudentServiceImpl(ServerInstance server,ClassState _class, boolean debugValue,String type,String host, String port) {
         this._class = _class;
+        this.server = server;
+        server.setHost(host);
+        server.setPort(port);
+        server.setTurmasRep(_class);
+        server.setType(type);
+        server.setActivityStatus(true);
         this.DEBUG_VALUE = debugValue;
 
     }
@@ -47,6 +58,15 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
                         StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
 
         debug("enroll...");
+
+        debug(" 'closeEnrollments' checking for secondary server");
+        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+
+            ProfessorClassServer.OpenEnrollmentsResponse response =
+                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+        }
 
         ClassesDefinitions.Student toEnroll = enrollRequest.getStudent();
         String studentName = toEnroll.getStudentName();
