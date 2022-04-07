@@ -6,18 +6,32 @@ import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
+
 import java.util.logging.Logger;
 
 public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
 
     private static final Logger LOGGER = Logger.getLogger(AdminServiceImpl.class.getName());
+
     private ClassState _class;
+
+    private ServerInstance server;
+
     private final boolean DEBUG_VALUE;
 
-    public AdminServiceImpl(ClassState _class, boolean debugValue) {
-        this._class = _class;
+
+    public AdminServiceImpl(ServerInstance server,ClassState classState, boolean debugValue,String type,String host, String port) {
+        this._class = classState;
+        this.server = server;
+        server.setHost(host);
+        server.setPort(port);
+        server.setTurmasRep(_class);
+        server.setType(type);
+        server.setActivityStatus(true);
         this.DEBUG_VALUE = debugValue;
+
     }
 
 
@@ -27,10 +41,27 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         debug("activate...");
 
+        if(server.getActivityStatus()) {
+            debug(" 'activate' building the response [server already active]");
+            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.ACTIVE_SERVER).build();
 
 
+            debug(" 'activate' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } else {
+            server.setActivityStatus(true);
+            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.OK).build();
 
 
+            debug(" 'activate' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
 
     }
 
@@ -39,6 +70,30 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
                             StreamObserver<AdminClassServer.DeactivateResponse> responseObserver) {
 
         debug("deactivate...");
+        if(server.getActivityStatus()) {
+
+            server.setActivityStatus(false);
+
+            debug(" 'activate' building the response ");
+            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.OK).build();
+
+
+            debug(" 'activate' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        } else {
+
+            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
+                    ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            debug(" 'activate' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+
         
         
     }
