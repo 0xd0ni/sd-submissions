@@ -11,20 +11,21 @@ public class NamingServices {
 
 
 
-    private ConcurrentHashMap<String,ServiceEntry> data;
+    private ConcurrentHashMap<String,ServiceEntry> namingServerState;
 
 
     public NamingServices() {
 
     }
 
+    public void addEntry(String service,ServiceEntry serviceEntry) {
+        namingServerState.put(service,serviceEntry);
 
+    }
 
+    public void removeService(String service) {
+        namingServerState.remove(service);
 
-
-
-
-
-
+    }
 
 }
