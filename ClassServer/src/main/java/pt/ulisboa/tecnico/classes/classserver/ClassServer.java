@@ -3,13 +3,12 @@ package pt.ulisboa.tecnico.classes.classserver;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
-
+import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 import java.io.IOException;
-
 
 public class ClassServer {
 
-  private static int port;
+  private static String port;
   private static String host;
   private static String serverFlag;
   private static String debugInput;
@@ -30,42 +29,35 @@ public class ClassServer {
           return;
         }
 
+        boolean debugFlag = false;
         if(args.length == 3) {
-          try {
             host = args[0];
-            port = Integer.parseInt(args[1]);;
+            port = args[1];;
             serverFlag = args[2];
-
-          }catch(NumberFormatException e) {
-            System.err.println("Error: string given instead of a number");
-            System.exit(-1);
-
-          }
 
         } else if( args.length == 4) {
-          try {
             host = args[0];
-            port = Integer.parseInt(args[1]);;
+            port = args[1];
             serverFlag = args[2];
             debugInput = args[3];
-
-          }catch(NumberFormatException e) {
-            System.err.println("Error: string given instead of a number");
-            System.exit(-1);
-
-          }
+            if(debugInput.equals(debug)) {
+              debugFlag = true;
+            }
 
         }
-        
-        boolean debugFlag = false;
+
+
+        // we have to register the server in the NamingServer
+
+
+        ServerInstance serverInstance = new ServerInstance();
         ClassState _class = new ClassState();
-        if(args.length == 4 && debugInput.equals(debug)) {
-            debugFlag = true;
-        }
 
         // Create a new server with multiple services to listen on port.
-        Server server = ServerBuilder.forPort(port).addService(new AdminServiceImpl(_class,debugFlag)).addService(
-                new ProfessorServiceImpl(_class,debugFlag)).addService(new StudentServiceImpl(_class,debugFlag)).build();
+        Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(
+                new AdminServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).addService(
+                new ProfessorServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).addService(
+                        new StudentServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).build();
 
         // Start the server.
         server.start();
@@ -74,6 +66,7 @@ public class ClassServer {
 
         // Wait for server termination.
         server.awaitTermination();
+
 
   }
 
