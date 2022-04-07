@@ -15,9 +15,17 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+enum Server{
+    PRIMARY,
+    SECONDARY
+}
 
 public class Utils {
+
+
+
 
     public static List<ClassesDefinitions.Student> StudentWrapper(List<Student> studentList) {
 
@@ -86,6 +94,19 @@ public class Utils {
         return studentName.matches("/^[A-Z]+[a-z]*{3,30}$/");
 
     }
+
+    public static String ServerSpecification(Server option) {
+        if(option == Server.PRIMARY) {
+            return "P";
+        }
+        else if(option == Server.SECONDARY) {
+            return "S";
+        }
+
+        return "INVALID";
+
+    }
+
 
 
 
