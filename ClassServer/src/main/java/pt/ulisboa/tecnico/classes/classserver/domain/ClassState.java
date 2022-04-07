@@ -1,8 +1,6 @@
 package pt.ulisboa.tecnico.classes.classserver.domain;
 
 
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
