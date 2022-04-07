@@ -7,17 +7,29 @@ import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
+
 import java.util.logging.Logger;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
 
     private static final Logger LOGGER = Logger.getLogger(ProfessorServiceImpl.class.getName());
+
+    private ServerInstance server;
+
     private ClassState _class;
+
     private final boolean DEBUG_VALUE;
 
-    public ProfessorServiceImpl(ClassState _class, boolean debugValue) {
+    public ProfessorServiceImpl(ServerInstance server,ClassState _class, boolean debugValue,String type,String host, String port) {
         this._class = _class;
+        this.server = server;
+        server.setHost(host);
+        server.setPort(port);
+        server.setTurmasRep(_class);
+        server.setType(type);
+        server.setActivityStatus(true);
         this.DEBUG_VALUE = debugValue;
 
     }
@@ -28,6 +40,14 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         debug("openEnrollments");
 
+        debug(" 'closeEnrollments' checking for secondary server");
+        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+
+            ProfessorClassServer.OpenEnrollmentsResponse response =
+                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+        }
 
         Integer capacity = request.getCapacity();
 
@@ -79,6 +99,15 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
                                  StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
 
         debug("closeEnrollments");
+
+        debug(" 'closeEnrollments' checking for secondary server");
+        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+
+            ProfessorClassServer.CloseEnrollmentsResponse response =
+                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+        }
 
         debug(" 'closeEnrollments' performing validation");
         if(!_class.getOpenEnrollments()) {
@@ -140,6 +169,16 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         debug("cancelEnrollments...");
 
         try {
+
+            debug(" 'closeEnrollments' checking for secondary server");
+            if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+
+                ProfessorClassServer.CancelEnrollmentResponse response =
+                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
+                                ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+            }
+
             debug(" 'cancelEnrollments' performs validation");
             String studentId = cancelRequest.getStudentId();
             if(!Utils.CheckForUserExistence(studentId,_class)) {
