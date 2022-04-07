@@ -18,7 +18,9 @@ import java.util.HashMap;
 
 public class AdminFrontend implements AutoCloseable {
     private final ManagedChannel channel;
+    private ManagedChannel channel_specific;
     private final AdminServiceGrpc.AdminServiceBlockingStub stub;
+    private AdminServiceGrpc.AdminServiceBlockingStub stub_specific;
 
     public AdminFrontend(String host, int port) {
         // Channel is the abstraction to connect to a service endpoint.
@@ -47,12 +49,13 @@ public class AdminFrontend implements AutoCloseable {
 
     public ActivateResponse setActivate(ActivateRequest request)
     {
-        return stub.activate(request);
+
+        return stub_specific.activate(request);
     }
 
     public DeactivateResponse setDeactivate(DeactivateRequest request)
     {
-        return stub.deactivate(request);
+        return stub_specific.deactivate(request);
     }
 
     public LookupResponse setLookup(LookupRequest request)
@@ -62,11 +65,18 @@ public class AdminFrontend implements AutoCloseable {
 
     public DumpResponse setDump(DumpRequest request)
     {
-        return stub.dump(request);
+
+        return stub_specific.dump(request);
+    }
+
+    public void setupSpecificServer(String host,int port) {
+        this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+        this.stub_specific = AdminServiceGrpc.newBlockingStub(channel_specific);
     }
 
     @Override
     public final void close() {
         channel.shutdown();
+        channel_specific.shutdown();
     }
 }

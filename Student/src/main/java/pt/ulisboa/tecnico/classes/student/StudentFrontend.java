@@ -2,14 +2,20 @@ package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import pt.ulisboa.tecnico.classes.contract.Lookup;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
 
 
 public class StudentFrontend implements AutoCloseable {
     private final ManagedChannel channel;
+    private ManagedChannel channel_specific;
     private final StudentServiceGrpc.StudentServiceBlockingStub stub;
+    private StudentServiceGrpc.StudentServiceBlockingStub stub_specific;
 
     public StudentFrontend(String host, int port) {
         // Channel is the abstraction to connect to a service endpoint.
@@ -32,10 +38,10 @@ public class StudentFrontend implements AutoCloseable {
 
     public ListClassResponse setListClass(ListClassRequest request)
     {
-        return stub.listClass(request);
+        return stub_specific.listClass(request);
     }
 
-    public EnrollResponse setEnroll(EnrollRequest request) { return stub.enroll(request); }
+    public EnrollResponse setEnroll(EnrollRequest request) { return stub_specific.enroll(request); }
 
     public boolean checkStudentId(String Id){
         try {
@@ -70,6 +76,16 @@ public class StudentFrontend implements AutoCloseable {
     @Override
     public final void close() {
         channel.shutdown();
+        channel_specific.shutdown();
     }
 
+    public LookupResponse setLookup(LookupRequest request)
+    {
+        return stub.lookup(request);
+    }
+
+    public void setupSpecificServer(String host,int port) {
+        this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+        this.stub_specific = StudentServiceGrpc.newBlockingStub(channel_specific);
+    }
 }

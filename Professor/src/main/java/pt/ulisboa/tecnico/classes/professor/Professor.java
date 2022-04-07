@@ -1,12 +1,18 @@
 package pt.ulisboa.tecnico.classes.professor;
 
+import pt.ulisboa.tecnico.classes.contract.Lookup;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
+import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
+import pt.ulisboa.tecnico.classes.LookupUtils;
 
 public class Professor {
 
@@ -15,12 +21,18 @@ public class Professor {
   private static final String OE_CMD = "openEnrollments";
   private static final String CE_CMD = "closeEnrollments";
   private static final String CAN_ENR_CMD = "cancelEnrollment";
+  private static final String LOOK_CMD = "lookup";
 
 
   public static void main(String[] args) {
 
-    final String host = "localhost";
-    final int port = 5000;
+    String host = "localhost";
+    int port = 5000;
+
+    HashMap<String, ArrayList<Lookup.LookupResponse.ServerInfo>> servers = new HashMap<>();
+    int p_count = 0;
+    int s_count = 0;
+    LookupUtils look = new LookupUtils();
 
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
       while (true) {
@@ -31,6 +43,13 @@ public class Professor {
             case EXIT_CMD -> System.exit(0);
 
             case LIST_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"");
+              frontend.setupSpecificServer(address,port_server);
+
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
               if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
@@ -39,7 +58,26 @@ public class Professor {
                 System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
 
+            case LOOK_CMD -> {
+              ArrayList<String> qualifiers = new ArrayList<>();
+              qualifiers.add(args[2]);
+
+              Lookup.LookupRequest req = Lookup.LookupRequest.newBuilder().setService(args[1]).
+                      setQualifiers(0,"").addAllQualifiers(qualifiers).build();
+              Lookup.LookupResponse res = frontend.setLookup(req);
+
+              res.getServersList().stream().map(server -> servers.get(args[1]).add(server));
+              System.out.println(Stringify.format(res.getCode())+"\n");
+            }
+
             case OE_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
+              frontend.setupSpecificServer(address,port_server);
+
               int numStudents = Integer.parseInt(line[1]);
               OpenEnrollmentsRequest oe_req = OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
               OpenEnrollmentsResponse oe_res = frontend.setOE(oe_req);
@@ -47,11 +85,25 @@ public class Professor {
             }
 
             case CE_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
+              frontend.setupSpecificServer(address,port_server);
+
               CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
               CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
               System.out.println(Stringify.format(ce_res.getCode())+"\n");
             }
             case CAN_ENR_CMD -> {
+
+              String address = "";
+              int port_server = 0;
+
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
+              frontend.setupSpecificServer(address,port_server);
+
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
               CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
               System.out.println(Stringify.format(c_res.getCode())+"\n");
