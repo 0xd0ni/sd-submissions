@@ -1,4 +1,5 @@
 syntax = "proto3";
+
 package pt.ulisboa.tecnico.classes.contract.naming;
 
 
@@ -17,7 +18,6 @@ message registerResponse {
 
 
 service NamingServerService {
-  
+
 
 }
-
