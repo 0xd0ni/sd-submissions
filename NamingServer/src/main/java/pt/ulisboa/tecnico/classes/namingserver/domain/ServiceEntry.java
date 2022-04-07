@@ -1,23 +1,25 @@
 package pt.ulisboa.tecnico.classes.namingserver.domain;
 
 
-import java.util.Set;
+import java.util.HashSet;
 
 public class ServiceEntry {
 
 
     private String serviceName;
 
-    private Set<ServerEntry> entries;
-
-
-
+    private HashSet<ServerEntry> entries;
 
     public ServiceEntry() {
 
     }
 
-    public synchronized Set<ServerEntry> getEntries() {
+    public ServiceEntry(String name) {
+        setServiceName(name);
+
+    }
+
+    public synchronized HashSet<ServerEntry> getEntries() {
         return entries;
 
     }
@@ -36,19 +38,5 @@ public class ServiceEntry {
         return serviceName;
 
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
