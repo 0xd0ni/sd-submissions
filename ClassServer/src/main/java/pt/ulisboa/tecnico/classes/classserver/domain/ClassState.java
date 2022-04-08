@@ -79,6 +79,14 @@ public class ClassState {
 
     }
 
+    public void setEnrolled(List<Student> enrolled) {
+        this.enrolled = enrolled;
+    }
+
+    public void setDiscarded(List<Student> discarded) {
+        this.discarded = discarded;
+    }
+
     public void addToRegistry(String studentId, Student student) {
         this.registered.put(studentId, student);
 
