@@ -52,7 +52,7 @@ public class ClassServer {
 
 
       // register the server @ NamingServer
-      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",Integer.parseInt("5000"));
+      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",5000);
 
       ClassServerNamingServer.RegisterRequest request =
               ClassServerNamingServer.
