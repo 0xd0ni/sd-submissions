@@ -4,6 +4,9 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
+
 import java.io.IOException;
 
 public class ClassServer {
@@ -45,10 +48,21 @@ public class ClassServer {
       }
 
 
-      // we have to register the server in the NamingServer
+      // register the server @ NamingServer
+      NamingServerFrontend namingServerFrontend = new NamingServerFrontend(host,Integer.parseInt(port));
+
+      ClassServerNamingServer.RegisterRequest request =
+              ClassServerNamingServer.
+                      RegisterRequest.
+                      newBuilder().
+                      setServiceName("turmas").setHostPort(host + ":" + port).setQualifiers(0,serverFlag).
+                      build();
+
+      namingServerFrontend.register(request);
 
       ServerInstance serverInstance = new ServerInstance();
       ClassState _class = new ClassState();
+
 
       // Create a new server with multiple services to listen on port.
       Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(
