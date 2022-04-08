@@ -58,8 +58,7 @@ public class ClassServer {
               ClassServerNamingServer.
                       RegisterRequest.
                       newBuilder().
-                      setServiceName("turmas").setHostPort(host + ":" + port).setQualifiers(0,serverFlag).
-                      build();
+                      setServiceName("turmas").setHostPort(host + ":" + port).addQualifiers(serverFlag).build();
 
       namingServerFrontend.register(request);
 
@@ -124,6 +123,14 @@ public class ClassServer {
 
       Signal.handle(new Signal("INT"), sig -> {
           System.out.println("\nShutting down the server");
+          ClassServerNamingServer.DeleteRequest requestDelete = ClassServerNamingServer.
+                  DeleteRequest.
+                  newBuilder().
+                  setServiceName("turmas").
+                  setHostPort(host + ":" + port).
+                  build();
+          namingServerFrontend.delete(requestDelete);
+          
           server.shutdown();
           System.exit(0);
       });
