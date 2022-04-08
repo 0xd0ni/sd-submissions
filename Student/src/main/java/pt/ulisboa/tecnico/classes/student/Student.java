@@ -2,6 +2,7 @@ package pt.ulisboa.tecnico.classes.student;
 
 import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
@@ -13,6 +14,7 @@ import pt.ulisboa.tecnico.classes.LookupUtils;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
+import sun.misc.Signal;
 
 public class Student {
 
@@ -50,10 +52,26 @@ public class Student {
 
     try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
+      Signal.handle(new Signal("INT"), sig -> {
+        System.out.println("\nShutting down the Student");
+        frontend.close();
+        System.exit(0);
+      });
+
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
+        @Override
+        public ClassServerNamingServer.RegisterResponse register(ClassServerNamingServer.RegisterRequest request) {
+          return null;
+        }
+
         @Override
         public LookupResponse lookup(LookupRequest request) {
           return super.lookup(request);
+        }
+
+        @Override
+        public ClassServerNamingServer.DeleteResponse delete(ClassServerNamingServer.DeleteRequest request) {
+          return null;
         }
       };
 

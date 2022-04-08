@@ -74,7 +74,6 @@ public class StudentFrontend implements AutoCloseable {
     @Override
     public final void close() {
         channel.shutdown();
-        channel_specific.shutdown();
     }
 
     public void setupSpecificServer(String host,int port) {
