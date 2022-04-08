@@ -77,10 +77,9 @@ public class ClassServer {
 
       System.out.println("Server started");
 
-      Signal.handle(new Signal("INT"), new SignalHandler() {
-          public void handle(Signal sig) {
-              server.shutdown();
-          }
+      Signal.handle(new Signal("INT"), sig -> {
+          System.out.println("\nShutting down the server");
+          server.shutdown();
       });
 
       // Wait for server termination.

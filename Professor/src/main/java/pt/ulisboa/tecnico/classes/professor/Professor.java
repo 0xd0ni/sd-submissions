@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.classes.professor;
 
 import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
@@ -14,6 +15,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import pt.ulisboa.tecnico.classes.LookupUtils;
+import sun.misc.Signal;
 
 public class Professor {
 
@@ -37,10 +39,26 @@ public class Professor {
 
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
+      Signal.handle(new Signal("INT"), sig -> {
+        System.out.println("\nShutting down the Professor");
+        frontend.close();
+        System.exit(0);
+      });
+
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
+        @Override
+        public ClassServerNamingServer.RegisterResponse register(ClassServerNamingServer.RegisterRequest request) {
+          return null;
+        }
+
         @Override
         public LookupResponse lookup(LookupRequest request) {
           return super.lookup(request);
+        }
+
+        @Override
+        public ClassServerNamingServer.DeleteResponse delete(ClassServerNamingServer.DeleteRequest request) {
+          return null;
         }
       };
 
