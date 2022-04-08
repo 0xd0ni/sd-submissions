@@ -115,35 +115,39 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
     public void delete(ClassServerNamingServer.DeleteRequest deleteRequest,
                        StreamObserver<ClassServerNamingServer.DeleteResponse> responseObserver) {
+
         debug( "delete...");
-
-
         String serviceName = deleteRequest.getServiceName();
         String server = deleteRequest.getHostPort();
 
-
+        debug(" 'delete' checking for service or server existence");
         if (!namingServices.checkForExistenceOfService(serviceName) || !namingServices.getServiceEntry(serviceName).hasEntry(server)) {
 
-                ClassServerNamingServer.DeleteResponse response =
-                        ClassServerNamingServer.DeleteResponse.newBuilder()
-                                .setMessage("Error: Couldn't delete server, server doesn't exist")
-                                .build();
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
+            debug(" 'delete' building the response");
+            ClassServerNamingServer.DeleteResponse response =
+                    ClassServerNamingServer.DeleteResponse.newBuilder()
+                            .setMessage("Error: Couldn't delete server, server doesn't exist")
+                            .build();
+
+            debug(" 'delete' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
         }
         else {
+
+                debug(" 'delete' removing server");
                 namingServices.getServiceEntry(serviceName).getEntries().removeIf(entry -> entry.getHostPort().equals(server));
 
+                debug(" 'delete' building the response");
                 ClassServerNamingServer.DeleteResponse response =
                         ClassServerNamingServer.DeleteResponse.newBuilder()
                                 .setMessage("Successfully deleted Server")
                                 .build();
+
+                debug(" 'delete' responding to the request");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
             }
-
-
-
     }
 
     public void debug(String msg) {

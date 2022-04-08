@@ -2,13 +2,11 @@ package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.Lookup;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 
 
 public class StudentFrontend implements AutoCloseable {

@@ -2,8 +2,8 @@ package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.Lookup;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
@@ -56,7 +56,7 @@ public class ProfessorFrontend implements AutoCloseable {
         return stub_specific.listClass(request);
     }
 
-    public Lookup.LookupResponse setLookup(Lookup.LookupRequest request)
+    public LookupResponse setLookup(LookupRequest request)
     {
         return stub.lookup(request);
     }

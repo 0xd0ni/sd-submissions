@@ -6,8 +6,8 @@ import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRespon
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateResponse;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpRequest;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;

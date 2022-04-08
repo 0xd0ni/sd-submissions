@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
 import pt.ulisboa.tecnico.classes.LookupUtils;
-import pt.ulisboa.tecnico.classes.contract.Lookup;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 
 public class Student {
 
@@ -28,7 +28,7 @@ public class Student {
     String host = "localhost";
     int port = 5000;
 
-    HashMap<String, ArrayList<LookupResponse.ServerInfo>> servers = new HashMap<>();
+    HashMap<String, ArrayList<ServerEntry>> servers = new HashMap<>();
     int p_count = 0;
     int s_count = 0;
     LookupUtils look = new LookupUtils();
@@ -76,12 +76,12 @@ public class Student {
               ArrayList<String> qualifiers = new ArrayList<>();
               qualifiers.add(args[2]);
 
-              LookupRequest req = Lookup.LookupRequest.newBuilder().setService(args[1]).
+              LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
               LookupResponse res = frontend.setLookup(req);
 
-              res.getServersList().stream().map(server -> servers.get(args[1]).add(server));
-              System.out.println(Stringify.format(res.getCode())+"\n");
+              res.getServerList().stream().map(server -> servers.get(args[1]).add(server));
+              //System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case E_CMD -> {

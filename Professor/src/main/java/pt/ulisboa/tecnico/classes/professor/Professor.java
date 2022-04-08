@@ -1,13 +1,13 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import pt.ulisboa.tecnico.classes.contract.Lookup;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupResponse;
-import pt.ulisboa.tecnico.classes.contract.Lookup.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,7 +29,7 @@ public class Professor {
     String host = "localhost";
     int port = 5000;
 
-    HashMap<String, ArrayList<Lookup.LookupResponse.ServerInfo>> servers = new HashMap<>();
+    HashMap<String, ArrayList<ServerEntry>> servers = new HashMap<>();
     int p_count = 0;
     int s_count = 0;
     LookupUtils look = new LookupUtils();
@@ -62,12 +62,12 @@ public class Professor {
               ArrayList<String> qualifiers = new ArrayList<>();
               qualifiers.add(args[2]);
 
-              Lookup.LookupRequest req = Lookup.LookupRequest.newBuilder().setService(args[1]).
+              LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
-              Lookup.LookupResponse res = frontend.setLookup(req);
+              LookupResponse res = frontend.setLookup(req);
 
-              res.getServersList().stream().map(server -> servers.get(args[1]).add(server));
-              System.out.println(Stringify.format(res.getCode())+"\n");
+              res.getServerList().stream().map(server -> servers.get(args[1]).add(server));
+              //System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case OE_CMD -> {
