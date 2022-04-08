@@ -6,6 +6,8 @@ import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.io.IOException;
 
@@ -74,6 +76,12 @@ public class ClassServer {
       server.start();
 
       System.out.println("Server started");
+
+      Signal.handle(new Signal("INT"), new SignalHandler() {
+          public void handle(Signal sig) {
+              server.shutdown();
+          }
+      });
 
       // Wait for server termination.
       server.awaitTermination();
