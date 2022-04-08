@@ -95,7 +95,6 @@ public class ProfessorFrontend implements AutoCloseable {
     @Override
     public final void close() {
         channel.shutdown();
-        channel_specific.shutdown();
     }
 
 }
