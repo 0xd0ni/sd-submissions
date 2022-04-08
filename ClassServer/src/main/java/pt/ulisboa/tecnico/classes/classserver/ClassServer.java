@@ -5,11 +5,12 @@ import io.grpc.ServerBuilder;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import sun.misc.Signal;
-import sun.misc.SignalHandler;
-
+import java.util.*;
 import java.io.IOException;
+import java.util.TimerTask;
 
 public class ClassServer {
 
@@ -72,10 +73,54 @@ public class ClassServer {
                       new ProfessorServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).addService(
                               new StudentServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).build();
 
+
+      // Initialize timer for propagating replica
+      Timer timer = new Timer();
       // Start the server.
       server.start();
 
       System.out.println("Server started");
+
+      if(!serverFlag.equals("S")) {
+          ClassServerToServerFrontend serversCommunication  = new ClassServerToServerFrontend(serverFlag);
+
+          ClassServerNamingServer.LookupRequest requestServer =
+                  ClassServerNamingServer.
+                          LookupRequest.
+                          newBuilder().
+                          setServiceName("turmas").
+                          addQualifiers("S").
+                          build();
+
+          ClassServerNamingServer.LookupResponse response = namingServerFrontend.lookup(requestServer);
+
+          ClassesDefinitions.ServerEntry entry = response.getServer(0);
+
+          String host = entry.getHostPort().split(":")[0];
+          int port = Integer.parseInt(entry.getHostPort().split(":")[1]);
+
+          serversCommunication.setupServer(host,port);
+
+          timer.scheduleAtFixedRate(new TimerTask() {
+              @Override
+              public void run() {
+                  ClassesDefinitions.ClassState classState =
+                          ClassesDefinitions.ClassState.newBuilder().
+                                  setCapacity(_class.getCapacity()).setOpenEnrollments(_class.getOpenEnrollments()).
+                                  addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
+                                  addAllDiscarded(Utils.StudentWrapper(_class.getDiscarded())).build();
+
+                  ClassServerClassServer.PropagateStateRequest requestPropagate =
+                          ClassServerClassServer.
+                                  PropagateStateRequest.
+                                  newBuilder().setClassState(classState).build();
+
+
+                  serversCommunication.setPropagate(requestPropagate);
+              }
+          }, 1*60*1000, 1*60*1000);
+
+      }
 
       Signal.handle(new Signal("INT"), sig -> {
           System.out.println("\nShutting down the server");
