@@ -52,7 +52,7 @@ public class ClassServer {
 
 
       // register the server @ NamingServer
-      NamingServerFrontend namingServerFrontend = new NamingServerFrontend(host,Integer.parseInt(port));
+      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",Integer.parseInt("5000"));
 
       ClassServerNamingServer.RegisterRequest request =
               ClassServerNamingServer.
@@ -130,7 +130,7 @@ public class ClassServer {
                   setHostPort(host + ":" + port).
                   build();
           namingServerFrontend.delete(requestDelete);
-          
+
           server.shutdown();
           System.exit(0);
       });
