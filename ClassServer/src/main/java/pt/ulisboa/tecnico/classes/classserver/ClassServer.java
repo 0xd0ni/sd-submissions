@@ -125,6 +125,7 @@ public class ClassServer {
       Signal.handle(new Signal("INT"), sig -> {
           System.out.println("\nShutting down the server");
           server.shutdown();
+          System.exit(0);
       });
 
       // Wait for server termination.
