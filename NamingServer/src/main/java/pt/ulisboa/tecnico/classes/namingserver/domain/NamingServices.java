@@ -1,18 +1,16 @@
 package pt.ulisboa.tecnico.classes.namingserver.domain;
 
-import pt.ulisboa.tecnico.classes.namingserver.domain.ServiceEntry;
 
-
-import java.util.Map;
+import java.util.HashMap;
 
 public class NamingServices {
 
 
-
-    private ConcurrentHashMap<String,ServiceEntry> namingServerState;
+    private HashMap<String,ServiceEntry> namingServerState;
 
 
     public NamingServices() {
+        this.namingServerState = new HashMap<>();
 
     }
 
@@ -24,6 +22,18 @@ public class NamingServices {
     public void removeService(String service) {
         namingServerState.remove(service);
 
+    }
+
+    public ServiceEntry getServiceEntry(String serviceName) {
+        return namingServerState.get(serviceName);
+
+    }
+
+    public boolean checkForExistenceOfService(String service) {
+        if(!namingServerState.isEmpty()) {
+            return namingServerState.containsKey(service);
+        }
+        return false;
     }
 
 }

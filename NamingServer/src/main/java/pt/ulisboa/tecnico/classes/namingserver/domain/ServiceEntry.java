@@ -12,6 +12,7 @@ public class ServiceEntry {
 
     public ServiceEntry() {
 
+
     }
 
     public ServiceEntry(String name) {
@@ -37,6 +38,18 @@ public class ServiceEntry {
     public synchronized String getServiceName() {
         return serviceName;
 
+    }
+
+    public synchronized void setEntry(ServerEntry entry){
+        entries.add(entry);
+    }
+
+    public synchronized boolean hasEntry(String address) {
+        for (ServerEntry server : entries) {
+            if (server.getHostPort().equals(address))
+                return true;
+        }
+        return false;
     }
 
 }
