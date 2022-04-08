@@ -2,21 +2,48 @@ syntax = "proto3";
 
 package pt.ulisboa.tecnico.classes.contract.naming;
 
+import "ClassesDefinitions.proto";
 
+// Professor -> NamingServer Service
+// Admin -> NamingServer Service
+// Student -> NamingServer Service
+// ClassServer -> NamingServer Service
 
-message registerRequest {
+message RegisterRequest {
   string serviceName = 1;
   string hostPort = 2;
   repeated string qualifiers = 3;
 
 }
 
-
-message registerResponse {
+message RegisterResponse {
+  string message = 1;
 
 }
 
+message LookupRequest {
+  string serviceName = 1;
+  repeated string qualifiers = 2;
+}
+
+message LookupResponse {
+  repeated ServerEntry server = 1;
+
+}
+
+message DeleteRequest {
+  string serviceName = 1;
+  string hostPort = 2;
+
+}
+
+message DeleteResponse {
+  string message = 1;
+}
 
 service NamingServerService {
+  rpc register(RegisterRequest) returns (RegisterResponse);
+  rpc lookup(LookupRequest) returns (LookupResponse);
+  rpc delete(DeleteRequest) returns (DeleteResponse);
 
 }

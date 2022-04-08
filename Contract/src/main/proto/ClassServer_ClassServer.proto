@@ -13,14 +13,7 @@ message PropagateStateResponse {
   ResponseCode code = 1;
 }
 
-message DeleteRequest {
-  string service = 1;
-  string host_info = 2;
-}
-
-message DeleteResponse {}
 
 service ClassServerService {
   rpc propagateState(PropagateStateRequest) returns (PropagateStateResponse);
-  rpc delete(DeleteRequest) returns (DeleteResponse);
 }

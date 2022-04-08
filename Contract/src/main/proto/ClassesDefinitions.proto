@@ -3,6 +3,8 @@ package pt.ulisboa.tecnico.classes.contract;
 
 // Classes System Definitions
 
+// domain Standard Server (Primary, Secondary ...)
+
 message Student {
   string studentId = 1;
   string studentName = 2;
@@ -15,6 +17,7 @@ message ClassState {
   repeated Student discarded = 4;
 }
 
+
 enum ResponseCode {
   OK = 0;
   NON_EXISTING_STUDENT = 1;
@@ -26,3 +29,24 @@ enum ResponseCode {
   WRITING_NOT_SUPPORTED = 7;
   ACTIVE_SERVER = 8;
 }
+
+// --------------------------------------
+
+// domain NamingServer
+
+message ServerEntry {
+  string hostPort = 1;
+  repeated string qualifiers = 2;
+}
+
+message ServiceEntry {
+  string serviceName = 1;
+  repeated ServerEntry serverEntries = 2;
+
+}
+
+message NamingServices {
+  map<string,ServiceEntry> info = 1;
+}
+
+// --------------------------------------
