@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.professor;
 
+import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
@@ -35,9 +36,18 @@ public class Professor {
     LookupUtils look = new LookupUtils();
 
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+
+      NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
+        @Override
+        public LookupResponse lookup(LookupRequest request) {
+          return super.lookup(request);
+        }
+      };
+
       while (true) {
         System.out.printf("> ");
         try {
+
           String[] line = scanner.nextLine().split(" ");
           switch (line[0]) {
             case EXIT_CMD -> System.exit(0);
@@ -64,7 +74,7 @@ public class Professor {
 
               LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
-              LookupResponse res = frontend.setLookup(req);
+              LookupResponse res = global_frontend.lookup(req);
 
               res.getServerList().stream().map(server -> servers.get(args[1]).add(server));
               //System.out.println(Stringify.format(res.getCode())+"\n");

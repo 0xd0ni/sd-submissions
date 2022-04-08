@@ -12,6 +12,7 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.Lookup
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.LookupUtils;
+import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,9 +40,18 @@ public class Admin {
     LookupUtils look = new LookupUtils();
 
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+
+      NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
+        @Override
+        public LookupResponse lookup(LookupRequest request) {
+          return super.lookup(request);
+        }
+      };
+
       while (true) {
         System.out.printf("> ");
         try {
+
           String line = scanner.nextLine();
           switch (line) {
 
@@ -81,7 +91,7 @@ public class Admin {
 
               LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
-              LookupResponse res = frontend.setLookup(req);
+              LookupResponse res = global_frontend.lookup(req);
 
               res.getServerList().stream().map(server -> servers.get(args[1]).add(server));
               //System.out.println(Stringify.format(res.getCode())+"\n");

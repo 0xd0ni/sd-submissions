@@ -77,11 +77,6 @@ public class StudentFrontend implements AutoCloseable {
         channel_specific.shutdown();
     }
 
-    public LookupResponse setLookup(LookupRequest request)
-    {
-        return stub.lookup(request);
-    }
-
     public void setupSpecificServer(String host,int port) {
         this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
         this.stub_specific = StudentServiceGrpc.newBlockingStub(channel_specific);

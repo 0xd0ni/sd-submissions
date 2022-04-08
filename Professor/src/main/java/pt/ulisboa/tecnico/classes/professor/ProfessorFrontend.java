@@ -56,11 +56,6 @@ public class ProfessorFrontend implements AutoCloseable {
         return stub_specific.listClass(request);
     }
 
-    public LookupResponse setLookup(LookupRequest request)
-    {
-        return stub.lookup(request);
-    }
-
     public CancelEnrollmentResponse setCanEnr(CancelEnrollmentRequest request) { return stub_specific.cancelEnrollment(request);}
 
     public int getCodeCanEnr(CancelEnrollmentResponse response) {
