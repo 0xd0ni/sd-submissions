@@ -26,6 +26,27 @@ public class Utils {
 
 
 
+    public static List<Student> studentAll(List<ClassesDefinitions.Student> list ) {
+
+        List<Student> students = new ArrayList<>();
+
+        if(!list.isEmpty()) {
+
+            for(ClassesDefinitions.Student student: list) {
+                if(student == null) {
+
+                } else {
+                    Student studentInstance = new Student();
+                    studentInstance.setStudentId(student.getStudentId());
+                    studentInstance.setStudentName(student.getStudentName());
+
+                    students.add(studentInstance);
+                }
+            }
+        }
+
+        return students;
+    }
 
     public static List<ClassesDefinitions.Student> StudentWrapper(List<Student> studentList) {
 
