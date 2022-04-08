@@ -7,12 +7,15 @@ import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateRequ
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpRequest;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.LookupUtils;
 import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
+import sun.misc.Signal;
+import sun.misc.SignalHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,12 +42,29 @@ public class Admin {
     int s_count = 0;
     LookupUtils look = new LookupUtils();
 
+
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
+
+      Signal.handle(new Signal("INT"), sig -> {
+        System.out.println("\nShutting down the Admin");
+        frontend.close();
+        System.exit(0);
+      });
 
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
         @Override
+        public ClassServerNamingServer.RegisterResponse register(ClassServerNamingServer.RegisterRequest request) {
+          return null;
+        }
+
+        @Override
         public LookupResponse lookup(LookupRequest request) {
           return super.lookup(request);
+        }
+
+        @Override
+        public ClassServerNamingServer.DeleteResponse delete(ClassServerNamingServer.DeleteRequest request) {
+          return null;
         }
       };
 
