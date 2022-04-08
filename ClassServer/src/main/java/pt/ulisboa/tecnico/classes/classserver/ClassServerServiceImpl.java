@@ -2,11 +2,13 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
+import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer;
 import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerServiceGrpc;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 
+import java.util.List;
 import java.util.logging.Logger;
 
 public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerServiceImplBase {
@@ -37,20 +39,42 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
                                StreamObserver<ClassServerClassServer.PropagateStateResponse> responseObserver) {
 
         debug("propagateState...");
+
+        debug(" 'openEnrollments' checking for server Activity Status");
+        if(!server.getActivityStatus()) {
+
+            debug(" 'propagateState' building the response");
+            ClassServerClassServer.PropagateStateResponse response =
+                    ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            debug(" 'propagateState' responding to the request [failed]");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+
+        debug(" 'propagateState' building the Class State");
         ClassesDefinitions.ClassState classState = propagateStateRequest.getClassState();
+        ClassState updated = new ClassState();
 
-        //-propagateState -- um servidor envia o seu estado a outra réplica.
+        List<Student> studentList = Utils.studentAll(classState.getEnrolledList());
+        updated.setCapacity(classState.getCapacity());
+        updated.setOpenEnrollments(classState.getOpenEnrollments());
+        updated.setEnrolled(Utils.studentAll(classState.getEnrolledList()));
+        updated.setDiscarded(Utils.studentAll(classState.getDiscardedList()));
+        updated.setCurrentCapacity(studentList.size());
 
+        server.setTurmasRep(updated);
 
-        // como aceder a outra replica ?
-        // como é que funciona o envio ?
+        debug(" 'propagateState' building the response");
+        ClassServerClassServer.PropagateStateResponse response =
+                ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
+                        ClassesDefinitions.ResponseCode.OK).build();
 
-        // alterar o estado atual da replica e mandar confirmaçã́o
-        //
-
-
-
-
+        debug(" 'propagateState' responding to the resquest");
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
 
     }
 
