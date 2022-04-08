@@ -13,7 +13,6 @@ import java.util.logging.Logger;
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
-
     private static final Logger LOGGER = Logger.getLogger(ProfessorServiceImpl.class.getName());
 
     private ServerInstance server;
@@ -40,12 +39,28 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         debug("openEnrollments");
 
-        debug(" 'closeEnrollments' checking for secondary server");
+        debug(" 'openEnrollments' checking for server Activity Status");
+        if(!server.getActivityStatus()) {
+
+            ProfessorClassServer.OpenEnrollmentsResponse response =
+                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+
+        }
+
+        debug(" 'openEnrollments' checking for secondary server");
         if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
 
             ProfessorClassServer.OpenEnrollmentsResponse response =
                     ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
                             ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
 
         }
 
@@ -100,6 +115,19 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         debug("closeEnrollments");
 
+        debug(" 'closeEnrollments' checking for server Activity Status");
+        if(!server.getActivityStatus()) {
+
+            ProfessorClassServer.CloseEnrollmentsResponse response =
+                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+
+        }
+
         debug(" 'closeEnrollments' checking for secondary server");
         if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
 
@@ -146,6 +174,17 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         debug("listClass");
 
+        debug(" 'listClass' checking for server Activity status");
+        if(!server.getActivityStatus()) {
+
+            ProfessorClassServer.ListClassResponse response =
+                    ProfessorClassServer.ListClassResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
 
         debug(" 'listClass' performs building the response");
         ProfessorClassServer.ListClassResponse response = ProfessorClassServer.ListClassResponse.newBuilder().setCode(
@@ -169,6 +208,18 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         debug("cancelEnrollments...");
 
         try {
+
+            debug(" 'cancelEnrollment' checking for server Activity status");
+            if(!server.getActivityStatus()) {
+
+                ProfessorClassServer.CancelEnrollmentResponse response =
+                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
+                                ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+
+            }
 
             debug(" 'closeEnrollments' checking for secondary server");
             if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {

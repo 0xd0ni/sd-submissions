@@ -39,6 +39,18 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
                           StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
         debug("listClass...");
 
+        debug(" 'listClass' checking for server Activity status");
+        if(!server.getActivityStatus()) {
+
+            StudentClassServer.ListClassResponse response =
+                    StudentClassServer.ListClassResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
+
         debug(" 'listClass' building the response");
         StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
                 ClassesDefinitions.ResponseCode.OK).setClassState(
@@ -58,6 +70,18 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
                         StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
 
         debug("enroll...");
+
+        debug(" 'enroll' checking for server Activity status");
+        if(!server.getActivityStatus()) {
+
+            StudentClassServer.EnrollResponse response =
+                    StudentClassServer.EnrollResponse.newBuilder().setCode(
+                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+
+        }
 
         debug(" 'closeEnrollments' checking for secondary server");
         if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
