@@ -74,12 +74,12 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
             server.setActivityStatus(false);
 
-            debug(" 'activate' building the response ");
+            debug(" 'deactivate' building the response ");
             AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
                     ClassesDefinitions.ResponseCode.OK).build();
 
 
-            debug(" 'activate' responding to the request");
+            debug(" 'deactivate' responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
@@ -88,14 +88,12 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
             AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
                     ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
 
-            debug(" 'activate' responding to the request");
+            debug(" 'deactivate' responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
 
         }
 
-        
-        
     }
 
     @Override
