@@ -72,8 +72,8 @@ public class Admin {
         System.out.printf("> ");
         try {
 
-          String line = scanner.nextLine();
-          switch (line) {
+          String[] line = scanner.nextLine().split(" ");
+          switch (line[0]) {
 
             case EXIT_CMD -> System.exit(0);
 
@@ -97,7 +97,7 @@ public class Admin {
               String address = "";
               int port_server = 0;
 
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,args[1]);
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,line[1]);
               frontend.setupSpecificServer(address,port_server);
 
               ActivateRequest req = ActivateRequest.newBuilder().build();
@@ -107,13 +107,13 @@ public class Admin {
 
             case LOOK_CMD -> {
               ArrayList<String> qualifiers = new ArrayList<>();
-              qualifiers.add(args[2]);
+              qualifiers.add(line[2]);
 
-              LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
+              LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
               LookupResponse res = global_frontend.lookup(req);
 
-              res.getServerList().stream().forEach(server -> servers.get(args[1]).add(server));
+              res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
               //System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
@@ -121,7 +121,7 @@ public class Admin {
               String address = "";
               int port_server = 0;
 
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,args[1]);
+              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,line[1]);
               frontend.setupSpecificServer(address,port_server);
 
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();

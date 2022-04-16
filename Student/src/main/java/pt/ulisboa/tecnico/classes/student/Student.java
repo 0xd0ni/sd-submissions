@@ -101,13 +101,13 @@ public class Student {
 
             case LOOK_CMD -> {
               ArrayList<String> qualifiers = new ArrayList<>();
-              qualifiers.add(args[2]);
+              qualifiers.add(line[2]);
 
-              LookupRequest req = LookupRequest.newBuilder().setServiceName(args[1]).
+              LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
                       setQualifiers(0,"").addAllQualifiers(qualifiers).build();
               LookupResponse res = global_frontend.lookup(req);
 
-              res.getServerList().stream().forEach(server -> servers.get(args[1]).add(server));
+              res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
               //System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
