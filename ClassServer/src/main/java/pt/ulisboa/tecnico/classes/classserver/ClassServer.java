@@ -52,13 +52,14 @@ public class ClassServer {
 
 
       // register the server @ NamingServer
-      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",5000);
+      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",5000,debugFlag);
 
       ClassServerNamingServer.RegisterRequest request =
               ClassServerNamingServer.
                       RegisterRequest.
                       newBuilder().
                       setServiceName("turmas").setHostPort(host + ":" + port).addQualifiers(serverFlag).build();
+
 
       namingServerFrontend.register(request);
 

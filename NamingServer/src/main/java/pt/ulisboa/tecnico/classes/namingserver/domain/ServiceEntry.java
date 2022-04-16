@@ -8,7 +8,7 @@ public class ServiceEntry {
 
     private String serviceName;
 
-    private HashSet<ServerEntry> entries;
+    private HashSet<ServerEntry> entries = new HashSet<>();
 
     public ServiceEntry() {
 

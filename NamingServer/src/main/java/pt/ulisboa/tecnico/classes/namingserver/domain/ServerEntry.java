@@ -8,7 +8,7 @@ public class ServerEntry {
 
     private String hostPort;
 
-    private List<String> qualifiers;
+    private List<String> qualifiers =  new ArrayList<>();
 
 
     public ServerEntry() {

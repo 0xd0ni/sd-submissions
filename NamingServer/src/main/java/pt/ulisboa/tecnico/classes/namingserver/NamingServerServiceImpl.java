@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.namingserver;
 
+import com.google.protobuf.ProtocolStringList;
 import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
@@ -10,6 +11,7 @@ import pt.ulisboa.tecnico.classes.namingserver.domain.ServiceEntry;
 import pt.ulisboa.tecnico.classes.namingserver.domain.NamingServices;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -37,16 +39,23 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         debug(" 'register' obtaining the necessary data to process the request");
         String serviceName = registerRequest.getServiceName();
         String hostPort = registerRequest.getHostPort();
-        ArrayList<String> qualifiers = new ArrayList<>(registerRequest.getQualifiersList());
+        //String qualifier = fillQualifier(registerRequest.getQualifiersList());
+
+        ProtocolStringList qualifiersList = registerRequest.getQualifiersList();
+        String qualifier = "";
+        for (Iterator<String> it = qualifiersList.iterator(); it.hasNext();) {
+              qualifier +=  it.next();
+
+        }
+        debug(qualifier);
 
         // general overview
         // [ NamingServices -> (map)[name ] -> ServiceEntry]
         // [ NamingServices -> (map) [ [name ] -> [ ServiceEntry -> [name ] (set )[[serverEntry]]]
 
         debug( " 'register' creating a new serverEntry");
-        ServerEntry serverEntry = new ServerEntry();
-        serverEntry.setHostPort(hostPort);
-        serverEntry.addQualifier(qualifiers.get(0));
+        ServerEntry serverEntry = new ServerEntry(hostPort);
+        serverEntry.addQualifier(qualifier);
 
         debug(" 'register' creating a new ServiceEntry");
         // it is not necessary to always create a new ServiceEntry
@@ -56,8 +65,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
         } else {
 
-            ServiceEntry serviceEntry = new ServiceEntry();
-            serviceEntry.setServiceName(serviceName);
+            ServiceEntry serviceEntry = new ServiceEntry(serviceName);
+
             serviceEntry.setEntry(serverEntry);
             debug(" 'register' adding a new entry to namingServices");
             namingServices.addEntry(serviceName,serviceEntry);

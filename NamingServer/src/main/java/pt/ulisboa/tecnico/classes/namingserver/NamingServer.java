@@ -38,14 +38,13 @@ public class NamingServer {
     } else if( args.length == 3) {
       host = args[0];
       port = args[1];
-      debugInput = args[3];
+      debugInput = args[2];
       if (debugInput.equals(debug)) {
         debugFlag = true;
       }
     }
 
     // we're assuming that the NamingServer never fails
-
     final BindableService impl = (new NamingServerServiceImpl(debugFlag));
     // Create a new server with NamingServer service to listen on port.
     Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(impl).build();
