@@ -51,20 +51,12 @@ public class ServerEntry {
 
    public static ClassesDefinitions.ServerEntry proto(ServerEntry server) {
 
-       System.out.print("------PROTOLIST -- ENTREI NESTA MERDA -- PONTO 3");
-       ClassesDefinitions.ServerEntry serverEntry =
-               ClassesDefinitions.ServerEntry.newBuilder().setHostPort(
-                       server.getHostPort()).addQualifiers(server.getQualifiers().get(0)).build();
-                       //setQualifiers(0, server.getQualifiers().get(0)).build();
-       System.out.print("------PROTOLIST -- ENTREI NESTA MERDA -- PONTO 4");
-       return serverEntry;
-
+       return ClassesDefinitions.ServerEntry.newBuilder().setHostPort(
+               server.getHostPort()).addQualifiers(server.getQualifiers().get(0)).build();
 
    }
 
    public static List<ClassesDefinitions.ServerEntry> protoList(List<ServerEntry> serverEntryList) {
-
-        System.out.print(" ------PROTOLIST -- ENTREI NESTA MERDA");
 
        List<ClassesDefinitions.ServerEntry> list = new ArrayList<>();
 
@@ -73,7 +65,6 @@ public class ServerEntry {
                if (server == null) {
 
                } else {
-                   System.out.print("------PROTOLIST -- ENTREI NESTA MERDA -- PONTO 2");
                    list.add(proto(server));
                }
            }
