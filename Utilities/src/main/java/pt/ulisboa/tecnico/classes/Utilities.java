@@ -33,8 +33,15 @@ public class Utilities {
         String port;
         ServerEntry host_server;
 
+        double write_percentage = writes * 100.0/(writes+reads);
+        double read_percentage = reads * 100.0/(writes+reads);
+
+        System.out.println("WRITE % - "+write_percentage);
+        System.out.println("READ % - "+read_percentage);
+
+
         //Case the server is secondary
-        if ( (writes/(writes+reads)) > (reads/(writes+reads)) || flag.equals(SECONDARY))
+        if ( write_percentage > read_percentage || flag.equals(SECONDARY))
         {
             host_server = servers.get(service).stream().filter(server -> server.getQualifiersList().
                     contains(SECONDARY)).toList().get(0);
@@ -45,7 +52,7 @@ public class Utilities {
             result.add(SECONDARY);
 
         }
-        else if ((writes/(writes+reads)) <= (reads/(writes+reads)) || flag.equals(PRIMARY))
+        else if (write_percentage <= read_percentage || flag.equals(PRIMARY))
         {
             host_server = servers.get(service).stream().filter(server -> server.getQualifiersList().
                     contains(PRIMARY)).toList().get(0);
