@@ -8,8 +8,11 @@ import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import pt.ulisboa.tecnico.classes.Utilities;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
@@ -105,16 +108,16 @@ public class Student {
             }
 
             case LOOK_CMD -> {
-              ArrayList<String> qualifiers = new ArrayList<>();
-              qualifiers.add(line[2]);
+              Arrays.stream(line[2].split(",")).
+                      collect(Collectors.toCollection(ArrayList::new)).stream().forEach(qualifier -> {
 
-              LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
-                      addQualifiers(qualifiers.get(0)).build();
+                        LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
+                                addQualifiers(qualifier).build();
 
-              LookupResponse res = global_frontend.lookup(req);
+                        LookupResponse res = global_frontend.lookup(req);
 
-              res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
-              //System.out.println(Stringify.format(res.getCode())+"\n");
+                        res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
+                      });
             }
 
             case E_CMD -> {

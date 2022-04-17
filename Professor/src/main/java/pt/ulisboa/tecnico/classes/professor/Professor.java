@@ -13,8 +13,11 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.Lookup
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
 import pt.ulisboa.tecnico.classes.Utilities;
 import sun.misc.Signal;
 
@@ -93,16 +96,16 @@ public class Professor {
             }
 
             case LOOK_CMD -> {
-              ArrayList<String> qualifiers = new ArrayList<>();
-              qualifiers.add(args[2]);
+              Arrays.stream(line[2].split(",")).
+                      collect(Collectors.toCollection(ArrayList::new)).stream().forEach( qualifier -> {
 
               LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
-                      addQualifiers(qualifiers.get(0)).build();
+                      addQualifiers(qualifier).build();
 
               LookupResponse res = global_frontend.lookup(req);
 
               res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
-              //System.out.println(Stringify.format(res.getCode())+"\n");
+                      });
             }
 
             case OE_CMD -> {
