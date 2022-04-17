@@ -2,11 +2,12 @@ package pt.ulisboa.tecnico.classes.student;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollRequest;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollResponse;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassRequest;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassResponse;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 
 
 public class StudentFrontend implements AutoCloseable {
@@ -16,6 +17,7 @@ public class StudentFrontend implements AutoCloseable {
     private StudentServiceGrpc.StudentServiceBlockingStub stub_specific;
 
     public StudentFrontend(String host, int port) {
+
         // Channel is the abstraction to connect to a service endpoint.
         // Let us use plaintext communication because we do not have certificates.
         this.channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
@@ -28,8 +30,6 @@ public class StudentFrontend implements AutoCloseable {
         return response.getCodeValue();
     }
 
-    public int getCodeE(EnrollResponse response) { return response.getCodeValue(); }
-
     public ClassState getClassState(ListClassResponse response) {
         return response.getClassState();
     }
@@ -39,7 +39,14 @@ public class StudentFrontend implements AutoCloseable {
         return stub_specific.listClass(request);
     }
 
-    public EnrollResponse setEnroll(EnrollRequest request) { return stub_specific.enroll(request); }
+    public EnrollResponse setEnroll(EnrollRequest request) {
+        return stub_specific.enroll(request);
+    }
+
+    public void setupSpecificServer(String host,int port) {
+        this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
+        this.stub_specific = StudentServiceGrpc.newBlockingStub(channel_specific);
+    }
 
     public boolean checkStudentId(String Id){
         try {
@@ -76,8 +83,4 @@ public class StudentFrontend implements AutoCloseable {
         channel.shutdown();
     }
 
-    public void setupSpecificServer(String host,int port) {
-        this.channel_specific = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
-        this.stub_specific = StudentServiceGrpc.newBlockingStub(channel_specific);
-    }
 }

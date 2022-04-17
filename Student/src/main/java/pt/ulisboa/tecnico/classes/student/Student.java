@@ -10,11 +10,13 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-import pt.ulisboa.tecnico.classes.LookupUtils;
+import pt.ulisboa.tecnico.classes.Utilities;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 import sun.misc.Signal;
+
+import static pt.ulisboa.tecnico.classes.Utilities.*;
 
 public class Student {
 
@@ -23,18 +25,18 @@ public class Student {
   private static final String EXIT_CMD = "exit";
   private static final String LIST_CMD = "list";
   private static final String E_CMD = "enroll";
-  private static final String LOOK_CMD = "lookup";
 
 
   public static void main(String[] args) {
 
-    String host = "localhost";
-    int port = 5000;
+    String host = NAMING_HOST;
+    int port = NAMING_PORT;
 
     HashMap<String, ArrayList<ServerEntry>> servers = new HashMap<>();
-    int p_count = 0;
-    int s_count = 0;
-    LookupUtils look = new LookupUtils();
+    servers.put(SERVICE,new ArrayList<>());
+    int p_count = 1;
+    int s_count = 1;
+    Utilities look = new Utilities();
 
     if (args.length < 2) {
       System.err.println("Argument(s) missing!");
@@ -52,10 +54,10 @@ public class Student {
 
     try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
-      Signal.handle(new Signal("INT"), sig -> {
-        System.out.println("\nShutting down the Student");
+      Signal.handle(new Signal(SIGINT), sig -> {
+        System.out.println(EXIT_STUDENT);
         frontend.close();
-        System.exit(0);
+        System.exit(SUCCESS);
       });
 
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
@@ -76,20 +78,23 @@ public class Student {
       };
 
       while (true) {
-        System.out.printf("> ");
+        System.out.print(PROMPT);
         try {
 
           String[] line = scanner.nextLine().split(" ");
           switch (line[0]) {
-            case EXIT_CMD -> System.exit(0);
+            case EXIT_CMD -> System.exit(SUCCESS);
 
             case LIST_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
@@ -104,7 +109,8 @@ public class Student {
               qualifiers.add(line[2]);
 
               LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
-                      setQualifiers(0,"").addAllQualifiers(qualifiers).build();
+                      addQualifiers(qualifiers.get(0)).build();
+
               LookupResponse res = global_frontend.lookup(req);
 
               res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
@@ -113,11 +119,14 @@ public class Student {
 
             case E_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(
                       ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
