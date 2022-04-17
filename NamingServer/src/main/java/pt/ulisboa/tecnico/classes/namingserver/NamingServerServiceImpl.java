@@ -2,7 +2,7 @@ package pt.ulisboa.tecnico.classes.namingserver;
 
 import com.google.protobuf.ProtocolStringList;
 import io.grpc.stub.StreamObserver;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
+import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.*;
 import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
 import pt.ulisboa.tecnico.classes.namingserver.domain.NamingServices;
 import pt.ulisboa.tecnico.classes.namingserver.domain.ServerEntry;
@@ -29,8 +29,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
     }
 
 
-    public void register(ClassServerNamingServer.RegisterRequest registerRequest,
-                         StreamObserver<ClassServerNamingServer.RegisterResponse>  responseObserver) {
+    public void register(RegisterRequest registerRequest,
+                         StreamObserver<RegisterResponse>  responseObserver) {
 
         debug( "register...");
 
@@ -70,11 +70,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         }
 
         debug(" 'register' building the response");
-        ClassServerNamingServer.RegisterResponse response = ClassServerNamingServer.
-                RegisterResponse.
-                newBuilder().
-                setMessage(" ").
-                build();
+        RegisterResponse response = RegisterResponse.newBuilder().setMessage(" ").build();
 
         debug(" 'register' responding to the request");
         responseObserver.onNext(response);
@@ -82,8 +78,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         debug(" 'register' completed");
     }
 
-    public void lookup(ClassServerNamingServer.LookupRequest lookupRequest,
-                       StreamObserver<ClassServerNamingServer.LookupResponse> responseObserver) {
+    public void lookup(LookupRequest lookupRequest,
+                       StreamObserver<LookupResponse> responseObserver) {
 
         debug( "lookup...");
         String serviceName = lookupRequest.getServiceName();
@@ -96,9 +92,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
             ArrayList<ServerEntry> servers = new ArrayList<>();
 
             debug(" 'lookup' building the response");
-            ClassServerNamingServer.LookupResponse response =
-                    ClassServerNamingServer.LookupResponse.newBuilder().addAllServer(
-                            ServerEntry.protoList(servers)).build();
+            LookupResponse response = LookupResponse.newBuilder().addAllServer(ServerEntry.protoList(servers)).build();
 
             debug(" 'lookup' responding to the request");
             responseObserver.onNext(response);
@@ -108,17 +102,12 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
 
             debug(" 'lookup' filtering the services ");
 
-            debug(serviceName);
-
-            debug(" 'before filtering'");
-
             ArrayList<ServerEntry> servers = namingServices.getServiceEntry(serviceName).getEntries().stream()
                     .filter(server -> server.hasQualifier(qualifier))
                     .collect(Collectors.toCollection(ArrayList::new));
 
             debug(" 'lookup' building the response");
-            ClassServerNamingServer.LookupResponse response =
-                    ClassServerNamingServer.LookupResponse.newBuilder().addAllServer(
+            LookupResponse response = LookupResponse.newBuilder().addAllServer(
                     ServerEntry.protoList(servers)).build();
 
             debug(" 'lookup' responding to the request");
@@ -129,8 +118,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         }
     }
 
-    public void delete(ClassServerNamingServer.DeleteRequest deleteRequest,
-                       StreamObserver<ClassServerNamingServer.DeleteResponse> responseObserver) {
+    public void delete(DeleteRequest deleteRequest,
+                       StreamObserver<DeleteResponse> responseObserver) {
 
         debug( "delete...");
         String serviceName = deleteRequest.getServiceName();
@@ -140,10 +129,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         if (!namingServices.checkForExistenceOfService(serviceName) || !namingServices.getServiceEntry(serviceName).hasEntry(server)) {
 
             debug(" 'delete' building the response");
-            ClassServerNamingServer.DeleteResponse response =
-                    ClassServerNamingServer.DeleteResponse.newBuilder()
-                            .setMessage("Error: Couldn't delete server, server doesn't exist")
-                            .build();
+            DeleteResponse response = DeleteResponse.newBuilder().
+                            setMessage("Error: Couldn't delete server, server doesn't exist").build();
 
             debug(" 'delete' responding to the request");
             responseObserver.onNext(response);
@@ -155,10 +142,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
                 namingServices.getServiceEntry(serviceName).getEntries().removeIf(entry -> entry.getHostPort().equals(server));
 
                 debug(" 'delete' building the response");
-                ClassServerNamingServer.DeleteResponse response =
-                        ClassServerNamingServer.DeleteResponse.newBuilder()
-                                .setMessage("Successfully deleted Server")
-                                .build();
+                DeleteResponse response = DeleteResponse.newBuilder().setMessage("Successfully deleted Server").
+                                build();
 
                 debug(" 'delete' responding to the request");
                 responseObserver.onNext(response);
