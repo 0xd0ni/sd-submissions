@@ -4,7 +4,7 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer;
+import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerServiceGrpc;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 
@@ -35,8 +35,8 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
 
 
     @Override
-    public void propagateState(ClassServerClassServer.PropagateStateRequest propagateStateRequest,
-                               StreamObserver<ClassServerClassServer.PropagateStateResponse> responseObserver) {
+    public void propagateState(PropagateStateRequest propagateStateRequest,
+                               StreamObserver<PropagateStateResponse> responseObserver) {
 
         debug("propagateState...");
 
@@ -44,9 +44,7 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
         if(!server.getActivityStatus()) {
 
             debug(" 'propagateState' building the response");
-            ClassServerClassServer.PropagateStateResponse response =
-                    ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            PropagateStateResponse response = PropagateStateResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
 
             debug(" 'propagateState' responding to the request [failed]");
             responseObserver.onNext(response);
@@ -69,9 +67,8 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
         server.setTurmasRep(updated);
 
         debug(" 'propagateState' building the response");
-        ClassServerClassServer.PropagateStateResponse response =
-                ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
-                        ClassesDefinitions.ResponseCode.OK).build();
+        PropagateStateResponse response = PropagateStateResponse.newBuilder().setCode(ClassesDefinitions.
+                ResponseCode.OK).build();
 
         debug(" 'propagateState' responding to the request");
         responseObserver.onNext(response);

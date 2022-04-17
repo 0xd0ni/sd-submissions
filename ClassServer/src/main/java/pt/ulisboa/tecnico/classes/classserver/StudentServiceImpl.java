@@ -7,10 +7,7 @@ import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollRequest;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollResponse;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassRequest;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassResponse;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import java.util.logging.Logger;
 

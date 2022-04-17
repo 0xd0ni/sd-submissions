@@ -5,7 +5,7 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 
@@ -37,25 +37,21 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
 
     @Override
-    public void activate(AdminClassServer.ActivateRequest activateRequest,
-                         StreamObserver<AdminClassServer.ActivateResponse> responseObserver) {
+    public void activate(ActivateRequest activateRequest,
+                         StreamObserver<ActivateResponse> responseObserver) {
 
         debug("activate...");
 
         if(server.getActivityStatus()) {
             debug(" 'activate' building the response [server already active]");
-            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().
-                    setCode(ResponseCode.ACTIVE_SERVER).build();
-
+            ActivateResponse response = ActivateResponse.newBuilder().setCode(ResponseCode.ACTIVE_SERVER).build();
 
             debug(" 'activate' responding to the request");
             responseObserver.onNext(response);
 
         } else {
             server.setActivityStatus(true);
-            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().
-                    setCode(ResponseCode.OK).build();
-
+            ActivateResponse response  = ActivateResponse.newBuilder().setCode(ResponseCode.OK).build();
 
             debug(" 'activate' responding to the request");
             responseObserver.onNext(response);
@@ -66,9 +62,10 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     }
 
+
     @Override
-    public  void deactivate(AdminClassServer.DeactivateRequest deactivateRequest,
-                            StreamObserver<AdminClassServer.DeactivateResponse> responseObserver) {
+    public  void deactivate(DeactivateRequest deactivateRequest,
+                            StreamObserver<DeactivateResponse> responseObserver) {
 
         debug("deactivate...");
         if(server.getActivityStatus()) {
@@ -76,8 +73,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
             server.setActivityStatus(false);
 
             debug(" 'deactivate' building the response ");
-            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().
-                    setCode(ResponseCode.OK).build();
+            DeactivateResponse response = DeactivateResponse.newBuilder().setCode(ResponseCode.OK).build();
 
 
             debug(" 'deactivate' responding to the request");
@@ -85,8 +81,7 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         } else {
 
-            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().
-                    setCode(ResponseCode.INACTIVE_SERVER).build();
+            DeactivateResponse response = DeactivateResponse.newBuilder().setCode(ResponseCode.INACTIVE_SERVER).build();
 
             debug(" 'deactivate' responding to the request");
             responseObserver.onNext(response);
@@ -96,36 +91,40 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
     }
 
+
     @Override
-    public void activateGossip(AdminClassServer.ActivateGossipRequest activateGossipRequest,
-                               StreamObserver<AdminClassServer.ActivateGossipResponse> responseObserver) {
+    public void activateGossip(ActivateGossipRequest activateGossipRequest,
+                               StreamObserver<ActivateGossipResponse> responseObserver) {
 
         debug("activateGossip...");
 
     }
 
+
     @Override
-    public void deactivateGossip(AdminClassServer.DeactivateGossipRequest deactivateGossipRequest,
-                                 StreamObserver<AdminClassServer.DeactivateGossipResponse> responseObserver) {
+    public void deactivateGossip(DeactivateGossipRequest deactivateGossipRequest,
+                                 StreamObserver<DeactivateGossipResponse> responseObserver) {
         debug("deactivateGossip...");
 
     }
 
+
     @Override
-    public void gossip(AdminClassServer.GossipRequest gossipRequest,
-                       StreamObserver<AdminClassServer.GossipResponse> responseObserver) {
+    public void gossip(GossipRequest gossipRequest,
+                       StreamObserver<GossipResponse> responseObserver) {
 
         debug("gossip...");
 
     }
 
+
     @Override
-    public void dump(AdminClassServer.DumpRequest dumpRequest, StreamObserver<AdminClassServer.DumpResponse> responseObserver) {
+    public void dump(DumpRequest dumpRequest, StreamObserver<DumpResponse> responseObserver) {
 
         debug("dump...");
 
         debug(" 'dump' building the response");
-        AdminClassServer.DumpResponse response = AdminClassServer.DumpResponse.newBuilder().setCode(ResponseCode.OK).
+        DumpResponse response = DumpResponse.newBuilder().setCode(ResponseCode.OK).
                 setClassState(ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).
                         setOpenEnrollments(_class.getOpenEnrollments()).
                         addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
