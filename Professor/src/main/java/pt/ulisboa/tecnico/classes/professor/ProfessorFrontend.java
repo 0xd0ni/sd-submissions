@@ -2,11 +2,10 @@ package pt.ulisboa.tecnico.classes.professor;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupRequest;
-import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ClassState;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
+
 
 public class ProfessorFrontend implements AutoCloseable {
     private final ManagedChannel channel;
@@ -15,6 +14,7 @@ public class ProfessorFrontend implements AutoCloseable {
     private ProfessorServiceGrpc.ProfessorServiceBlockingStub stub_specific;
 
     public ProfessorFrontend(String host, int port) {
+
         // Channel is the abstraction to connect to a service endpoint.
         // Let us use plaintext communication because we do not have certificates.
         this.channel = ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
@@ -36,30 +36,21 @@ public class ProfessorFrontend implements AutoCloseable {
         return response.getClassState();
     }
 
-    public int getCodeOE(OpenEnrollmentsResponse response) {
-        return response.getCodeValue();
-    }
-
     public OpenEnrollmentsResponse setOE(OpenEnrollmentsRequest request)
     {
         return stub_specific.openEnrollments(request);
     }
 
-    public CloseEnrollmentsResponse setCE(CloseEnrollmentsRequest request) {return stub_specific.closeEnrollments(request);}
-
-    public int getCodeCE(CloseEnrollmentsResponse response) {
-        return response.getCodeValue();
-    }
+    public CloseEnrollmentsResponse setCE(CloseEnrollmentsRequest request) {
+        return stub_specific.closeEnrollments(request);}
 
     public ListClassResponse setListClass(ListClassRequest request)
     {
         return stub_specific.listClass(request);
     }
 
-    public CancelEnrollmentResponse setCanEnr(CancelEnrollmentRequest request) { return stub_specific.cancelEnrollment(request);}
-
-    public int getCodeCanEnr(CancelEnrollmentResponse response) {
-        return response.getCodeValue();
+    public CancelEnrollmentResponse setCanEnr(CancelEnrollmentRequest request) {
+        return stub_specific.cancelEnrollment(request);
     }
 
     public boolean checkStudentId(String Id){

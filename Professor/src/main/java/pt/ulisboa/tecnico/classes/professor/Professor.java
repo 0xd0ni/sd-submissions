@@ -1,6 +1,7 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
+import
+        pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
@@ -14,8 +15,10 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.Lookup
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Scanner;
-import pt.ulisboa.tecnico.classes.LookupUtils;
+import pt.ulisboa.tecnico.classes.Utilities;
 import sun.misc.Signal;
+
+import static pt.ulisboa.tecnico.classes.Utilities.*;
 
 public class Professor {
 
@@ -24,25 +27,25 @@ public class Professor {
   private static final String OE_CMD = "openEnrollments";
   private static final String CE_CMD = "closeEnrollments";
   private static final String CAN_ENR_CMD = "cancelEnrollment";
-  private static final String LOOK_CMD = "lookup";
 
 
   public static void main(String[] args) {
 
-    String host = "localhost";
-    int port = 5000;
+    String host = NAMING_HOST;
+    int port = NAMING_PORT;
 
     HashMap<String, ArrayList<ServerEntry>> servers = new HashMap<>();
-    int p_count = 0;
-    int s_count = 0;
-    LookupUtils look = new LookupUtils();
+    servers.put(SERVICE,new ArrayList<>());
+    int p_count = 1;
+    int s_count = 1;
+    Utilities look = new Utilities();
 
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
-      Signal.handle(new Signal("INT"), sig -> {
-        System.out.println("\nShutting down the Professor");
+      Signal.handle(new Signal(SIGINT), sig -> {
+        System.out.println(EXIT_PROFESSOR);
         frontend.close();
-        System.exit(0);
+        System.exit(SUCCESS);
       });
 
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
@@ -63,20 +66,23 @@ public class Professor {
       };
 
       while (true) {
-        System.out.printf("> ");
+        System.out.print(PROMPT);
         try {
 
           String[] line = scanner.nextLine().split(" ");
           switch (line[0]) {
-            case EXIT_CMD -> System.exit(0);
+            case EXIT_CMD -> System.exit(SUCCESS);
 
             case LIST_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
@@ -91,7 +97,8 @@ public class Professor {
               qualifiers.add(args[2]);
 
               LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
-                      setQualifiers(0,"").addAllQualifiers(qualifiers).build();
+                      addQualifiers(qualifiers.get(0)).build();
+
               LookupResponse res = global_frontend.lookup(req);
 
               res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
@@ -100,11 +107,14 @@ public class Professor {
 
             case OE_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               int numStudents = Integer.parseInt(line[1]);
               OpenEnrollmentsRequest oe_req = OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
@@ -114,11 +124,14 @@ public class Professor {
 
             case CE_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
               CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
@@ -126,11 +139,14 @@ public class Professor {
             }
             case CAN_ENR_CMD -> {
 
-              String address = "";
-              int port_server = 0;
-
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"P");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
               CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
