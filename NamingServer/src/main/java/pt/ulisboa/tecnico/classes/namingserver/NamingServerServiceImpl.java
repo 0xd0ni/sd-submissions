@@ -1,14 +1,12 @@
 package pt.ulisboa.tecnico.classes.namingserver;
 
 import com.google.protobuf.ProtocolStringList;
-import io.grpc.Server;
 import io.grpc.stub.StreamObserver;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.naming.NamingServerServiceGrpc;
+import pt.ulisboa.tecnico.classes.namingserver.domain.NamingServices;
 import pt.ulisboa.tecnico.classes.namingserver.domain.ServerEntry;
 import pt.ulisboa.tecnico.classes.namingserver.domain.ServiceEntry;
-import pt.ulisboa.tecnico.classes.namingserver.domain.NamingServices;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -39,7 +37,6 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         debug(" 'register' obtaining the necessary data to process the request");
         String serviceName = registerRequest.getServiceName();
         String hostPort = registerRequest.getHostPort();
-        //String qualifier = fillQualifier(registerRequest.getQualifiersList());
 
         ProtocolStringList qualifiersList = registerRequest.getQualifiersList();
         String qualifier = "";
@@ -47,7 +44,6 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
               qualifier +=  it.next();
 
         }
-        debug(qualifier);
 
         // general overview
         // [ NamingServices -> (map)[name ] -> ServiceEntry]
@@ -83,6 +79,7 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         debug(" 'register' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        debug(" 'register' completed");
     }
 
     public void lookup(ClassServerNamingServer.LookupRequest lookupRequest,
@@ -91,6 +88,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         debug( "lookup...");
         String serviceName = lookupRequest.getServiceName();
         String qualifier = new ArrayList<>(lookupRequest.getQualifiersList()).get(0);
+
+        debug(qualifier);
 
         debug(" 'lookup' checking for service existence");
         if(!namingServices.checkForExistenceOfService(serviceName)) {
@@ -108,17 +107,25 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
         } else {
 
             debug(" 'lookup' filtering the services ");
+
+            debug(serviceName);
+
+            debug(" 'before filtering'");
+
             ArrayList<ServerEntry> servers = namingServices.getServiceEntry(serviceName).getEntries().stream()
                     .filter(server -> server.hasQualifier(qualifier))
                     .collect(Collectors.toCollection(ArrayList::new));
 
             debug(" 'lookup' building the response");
-            ClassServerNamingServer.LookupResponse response = ClassServerNamingServer.LookupResponse.newBuilder().addAllServer(
+            ClassServerNamingServer.LookupResponse response =
+                    ClassServerNamingServer.LookupResponse.newBuilder().addAllServer(
                     ServerEntry.protoList(servers)).build();
 
             debug(" 'lookup' responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'lookup' response sent");
+
         }
     }
 
@@ -156,6 +163,8 @@ public class NamingServerServiceImpl extends NamingServerServiceGrpc.NamingServe
                 debug(" 'delete' responding to the request");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                debug(" 'delete' completed");
+
             }
     }
 
