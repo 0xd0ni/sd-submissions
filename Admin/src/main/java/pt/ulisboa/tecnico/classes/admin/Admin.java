@@ -12,16 +12,15 @@ import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.Lookup
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer.LookupResponse;
 import pt.ulisboa.tecnico.classes.Stringify;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
-import pt.ulisboa.tecnico.classes.LookupUtils;
+import pt.ulisboa.tecnico.classes.Utilities;
 import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Scanner;
-import java.util.stream.Collectors;
+
+import static pt.ulisboa.tecnico.classes.Utilities.*;
 
 public class Admin {
 
@@ -32,23 +31,25 @@ public class Admin {
   private static final String DUMP_CMD = "dump";
 
 
+
   public static void main(String[] args) {
 
-    String host = "localhost";
-    int port = 5000;
+    String host = NAMING_HOST;
+    int port = NAMING_PORT;
 
     HashMap<String,ArrayList<ServerEntry>> servers = new HashMap<>();
-    int p_count = 0;
-    int s_count = 0;
-    LookupUtils look = new LookupUtils();
+    servers.put(SERVICE,new ArrayList<>());
+    int p_count = 1;
+    int s_count = 1;
+    Utilities look = new Utilities();
 
 
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
-      Signal.handle(new Signal("INT"), sig -> {
-        System.out.println("\nShutting down the Admin");
+      Signal.handle(new Signal(SIGINT), sig -> {
+        System.out.println(EXIT_ADMIN);
         frontend.close();
-        System.exit(0);
+        System.exit(SUCCESS);
       });
 
       NamingServerGlobalFrontend global_frontend = new NamingServerGlobalFrontend(host,port) {
@@ -69,7 +70,7 @@ public class Admin {
       };
 
       while (true) {
-        System.out.printf("> ");
+        System.out.print(PROMPT);
         try {
 
           String[] line = scanner.nextLine().split(" ");
@@ -78,11 +79,16 @@ public class Admin {
             case EXIT_CMD -> System.exit(0);
 
             case DUMP_CMD -> {
-              String address = "";
-              int port_server = 0;
 
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,"");
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+
 
               DumpRequest dump_req = DumpRequest.newBuilder().build();
               DumpResponse dump_res = frontend.setDump(dump_req);
@@ -94,11 +100,15 @@ public class Admin {
             }
 
             case ACTIV_CMD -> {
-              String address = "";
-              int port_server = 0;
 
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,line[1]);
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               ActivateRequest req = ActivateRequest.newBuilder().build();
               ActivateResponse res = frontend.setActivate(req);
@@ -109,20 +119,25 @@ public class Admin {
               ArrayList<String> qualifiers = new ArrayList<>();
               qualifiers.add(line[2]);
 
-              LookupRequest req = LookupRequest.newBuilder().setServiceName(line[1]).
-                      setQualifiers(0,"").addAllQualifiers(qualifiers).build();
-              LookupResponse res = global_frontend.lookup(req);
+              LookupRequest req =  LookupRequest.newBuilder().setServiceName(line[1]).
+                      addQualifiers(qualifiers.get(0)).build();
 
+              LookupResponse res = global_frontend.lookup(req);
               res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
+
               //System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case DEACT_CMD -> {
-              String address = "";
-              int port_server = 0;
 
-              look.set_address_server("turmas",p_count,s_count,address,port_server,servers,line[1]);
-              frontend.setupSpecificServer(address,port_server);
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY)) {
+                p_count++;
+              }
+              else {
+                s_count++;
+              }
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
