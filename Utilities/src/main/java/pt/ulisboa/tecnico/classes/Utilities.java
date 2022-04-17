@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
 
-public class Utils {
+public class Utilities {
 
     public static final String LOOK_CMD = "lookup";
     public static final String SERVICE = "turmas";
@@ -22,29 +22,40 @@ public class Utils {
     public static final int SUCCESS = 0;
 
 
-    public Utils() {
+    public Utilities() {
 
     }
 
-    public void set_address_server(String service,int writes, int reads, String address, int port,
-                                   HashMap<String, ArrayList<ServerEntry>> servers,String flag)
+    public ArrayList<String> set_address_server(String service,int writes, int reads,HashMap<String, ArrayList<ServerEntry>> servers,String flag)
     {
+        ArrayList<String> result = new ArrayList<>();
+        String address;
+        String port;
+        ServerEntry host_server;
+
         //Case the server is secondary
         if ( (writes/(writes+reads)) > (reads/(writes+reads)) || flag.equals(SECONDARY))
         {
-            ServerEntry host_server = servers.get(service).stream().
-                    filter(server -> server.getQualifiersList().contains(SECONDARY)).toList().get(0);
+            host_server = servers.get(service).stream().filter(server -> server.getQualifiersList().
+                    contains(SECONDARY)).toList().get(0);
             address = host_server.getHostPort().split(":")[0];
-            port = Integer.parseInt(host_server.getHostPort().split(":")[1]);
-            reads++;
+            port = host_server.getHostPort().split(":")[1];
+            result.add(address);
+            result.add(port);
+            result.add(SECONDARY);
+
         }
         else if ((writes/(writes+reads)) <= (reads/(writes+reads)) || flag.equals(PRIMARY))
         {
-            ServerEntry host_server = servers.get(service).stream().
-                    filter(server -> server.getQualifiersList().contains(PRIMARY)).toList().get(0);
+            host_server = servers.get(service).stream().filter(server -> server.getQualifiersList().
+                            contains(PRIMARY)).toList().get(0);
             address = host_server.getHostPort().split(":")[0];
-            port = Integer.parseInt(host_server.getHostPort().split(":")[1]);
-            writes++;
+            port = host_server.getHostPort().split(":")[1];
+            result.add(address);
+            result.add(port);
+            result.add(PRIMARY);
+
         }
+        return result;
     }
 }
