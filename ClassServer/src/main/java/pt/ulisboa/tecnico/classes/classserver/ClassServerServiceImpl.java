@@ -40,7 +40,7 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
 
         debug("propagateState...");
 
-        debug(" 'openEnrollments' checking for server Activity Status");
+        debug(" 'propagateState' checking for server Activity Status");
         if(!server.getActivityStatus()) {
 
             debug(" 'propagateState' building the response");
@@ -51,6 +51,7 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
             debug(" 'propagateState' responding to the request [failed]");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'propagateState' completed");
 
         }
 
@@ -72,9 +73,10 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
                 ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
                         ClassesDefinitions.ResponseCode.OK).build();
 
-        debug(" 'propagateState' responding to the resquest");
+        debug(" 'propagateState' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        debug(" 'propagateState' completed");
 
     }
 

@@ -3,14 +3,17 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
-import pt.ulisboa.tecnico.classes.classserver.domain.Student;
-import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
-import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer;
-import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
-
+import pt.ulisboa.tecnico.classes.classserver.domain.Student;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollRequest;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.EnrollResponse;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassRequest;
+import pt.ulisboa.tecnico.classes.contract.student.StudentClassServer.ListClassResponse;
+import pt.ulisboa.tecnico.classes.contract.student.StudentServiceGrpc;
 import java.util.logging.Logger;
+
 
 public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBase {
 
@@ -34,26 +37,27 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
     }
 
+
     @Override
-    public void listClass(StudentClassServer.ListClassRequest listClassRequest,
-                          StreamObserver<StudentClassServer.ListClassResponse> responseObserver) {
+    public void listClass(ListClassRequest listClassRequest,
+                          StreamObserver<ListClassResponse> responseObserver) {
         debug("listClass...");
 
         debug(" 'listClass' checking for server Activity status");
         if(!server.getActivityStatus()) {
 
-            StudentClassServer.ListClassResponse response =
-                    StudentClassServer.ListClassResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            ListClassResponse response = ListClassResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.INACTIVE_SERVER).build();
 
+            debug(" 'listClass' responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'listClass' completed");
 
         }
 
         debug(" 'listClass' building the response");
-        StudentClassServer.ListClassResponse response = StudentClassServer.ListClassResponse.newBuilder().setCode(
-                ClassesDefinitions.ResponseCode.OK).setClassState(
+        ListClassResponse response = ListClassResponse.newBuilder().setCode(ResponseCode.OK).setClassState(
                 ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
                         _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
                         _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
@@ -62,33 +66,37 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         debug(" 'listClass' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        debug(" 'listClass' completed");
 
     }
 
+
     @Override
-    public  void enroll(StudentClassServer.EnrollRequest enrollRequest,
-                        StreamObserver<StudentClassServer.EnrollResponse> responseObserver) {
+    public  void enroll(EnrollRequest enrollRequest,
+                        StreamObserver<EnrollResponse> responseObserver) {
 
         debug("enroll...");
 
         debug(" 'enroll' checking for server Activity status");
         if(!server.getActivityStatus()) {
 
-            StudentClassServer.EnrollResponse response =
-                    StudentClassServer.EnrollResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            EnrollResponse response = EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.INACTIVE_SERVER).build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'enroll' completed");
 
         }
-
-        debug(" 'closeEnrollments' checking for secondary server");
         if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+            debug(" 'enroll' checking for secondary server");
 
-            ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+            EnrollResponse response = EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.WRITING_NOT_SUPPORTED).build();
+
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            debug(" 'enroll' completed");
 
         }
 
@@ -101,29 +109,35 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
         debug(" 'enroll' performing validations");
         if(!_class.getOpenEnrollments()) {
+            debug(" 'enroll' checking for open Enrollments");
 
             debug(" 'enroll' responding to the request [due to validation]");
-            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED).build());
+            responseObserver.onNext(EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.ENROLLMENTS_ALREADY_CLOSED).build());
             responseObserver.onCompleted();
+            debug(" 'enroll' completed");
 
 
         }
         else if(Utils.CheckForUserExistence(studentId,_class)) {
+            debug(" 'enroll' checking for user Existence");
 
             debug(" 'enroll' responding to the request [due to validation]");
-            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.STUDENT_ALREADY_ENROLLED).build());
+            responseObserver.onNext(EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.STUDENT_ALREADY_ENROLLED).build());
             responseObserver.onCompleted();
+            debug(" 'enroll' completed");
 
 
         }
         else if(_class.checkForFullCapacity()) {
+            debug(" 'enroll' checking for full capacity");
 
             debug(" 'enroll' responding to the request [due to validation]");
-            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.FULL_CLASS).build());
+            responseObserver.onNext(EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.FULL_CLASS).build());
             responseObserver.onCompleted();
+            debug(" 'enroll' completed");
         }
         else {
 
@@ -136,12 +150,14 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
 
             debug(" 'enroll' responding to the request");
-            responseObserver.onNext(StudentClassServer.EnrollResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.OK).build());
+            responseObserver.onNext(EnrollResponse.newBuilder().setCode(ClassesDefinitions.
+                    ResponseCode.OK).build());
             responseObserver.onCompleted();
+            debug(" 'enroll' completed");
         }
 
     }
+
 
     public void debug(String msg) {
         if(DEBUG_VALUE) {

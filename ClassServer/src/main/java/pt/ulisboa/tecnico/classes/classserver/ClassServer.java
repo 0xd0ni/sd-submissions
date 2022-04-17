@@ -7,10 +7,13 @@ import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
 import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
+
 import sun.misc.Signal;
 import java.util.*;
 import java.io.IOException;
 import java.util.TimerTask;
+
+import static pt.ulisboa.tecnico.classes.Utilities.*;
 
 public class ClassServer {
 
@@ -18,7 +21,6 @@ public class ClassServer {
   private static String host;
   private static String serverFlag;
   private static String debugInput;
-  private static final String debug = "-debug";
 
   public static void main(String[] args) throws IOException, InterruptedException {
       System.out.println(ClassServer.class.getSimpleName());
@@ -45,20 +47,20 @@ public class ClassServer {
           port = args[1];
           serverFlag = args[2];
           debugInput = args[3];
-          if(debugInput.equals(debug)) {
+          if(debugInput.equals(DEBUG)) {
               debugFlag = true;
             }
       }
 
 
       // register the server @ NamingServer
-      NamingServerFrontend namingServerFrontend = new NamingServerFrontend("localhost",5000,debugFlag);
+      NamingServerFrontend namingServerFrontend = new NamingServerFrontend(NAMING_HOST,NAMING_PORT,debugFlag);
 
       ClassServerNamingServer.RegisterRequest request =
               ClassServerNamingServer.
                       RegisterRequest.
                       newBuilder().
-                      setServiceName("turmas").setHostPort(host + ":" + port).addQualifiers(serverFlag).build();
+                      setServiceName(SERVICE).setHostPort(host + ":" + port).addQualifiers(serverFlag).build();
 
 
       namingServerFrontend.register(request);
@@ -81,15 +83,15 @@ public class ClassServer {
 
       System.out.println("Server started");
 
-      if(!serverFlag.equals("S")) {
+      if(!serverFlag.equals(SECONDARY)) {
           ClassServerToServerFrontend serversCommunication  = new ClassServerToServerFrontend(serverFlag);
 
           ClassServerNamingServer.LookupRequest requestServer =
                   ClassServerNamingServer.
                           LookupRequest.
                           newBuilder().
-                          setServiceName("turmas").
-                          addQualifiers("S").
+                          setServiceName(SERVICE).
+                          addQualifiers(SECONDARY).
                           build();
 
           ClassServerNamingServer.LookupResponse response = namingServerFrontend.lookup(requestServer);
@@ -118,22 +120,22 @@ public class ClassServer {
 
                   serversCommunication.setPropagate(requestPropagate);
               }
-          }, 1*60*1000, 1*60*1000);
+          }, 60*1000, 60*1000);
 
       }
 
-      Signal.handle(new Signal("INT"), sig -> {
-          System.out.println("\nShutting down the server");
+      Signal.handle(new Signal(SIGINT), sig -> {
+          System.out.println(EXIT_SERVER);
           ClassServerNamingServer.DeleteRequest requestDelete = ClassServerNamingServer.
                   DeleteRequest.
                   newBuilder().
-                  setServiceName("turmas").
+                  setServiceName(SERVICE).
                   setHostPort(host + ":" + port).
                   build();
           namingServerFrontend.delete(requestDelete);
 
           server.shutdown();
-          System.exit(0);
+          System.exit(SUCCESS);
       });
 
       // Wait for server termination.

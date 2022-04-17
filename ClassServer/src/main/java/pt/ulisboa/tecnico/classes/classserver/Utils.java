@@ -9,13 +9,10 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
-import pt.ulisboa.tecnico.classes.classserver.exception.SmallNumberException;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
-
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 enum Server{
     PRIMARY,
@@ -23,8 +20,6 @@ enum Server{
 }
 
 public class Utils {
-
-
 
     public static List<Student> studentAll(List<ClassesDefinitions.Student> list ) {
 
@@ -55,7 +50,6 @@ public class Utils {
         for(Student student: studentList) {
             if(student == null){
 
-
             } else {
                 toSend.add(WrapTo(student));
             }
@@ -64,55 +58,15 @@ public class Utils {
         return toSend;
     }
 
-
     public static ClassesDefinitions.Student WrapTo(Student student) {
 
-
-        ClassesDefinitions.Student studentToSend =
-                ClassesDefinitions.Student.newBuilder().setStudentId(
-                        student.getStudentId()).setStudentName(student.getStudentName()).build();
-
-        return studentToSend;
+        return ClassesDefinitions.Student.newBuilder().setStudentId(
+                student.getStudentId()).setStudentName(student.getStudentName()).build();
 
     }
 
     public static boolean CheckForUserExistence(String studentId, ClassState state) {
         return state.getRegistered().containsKey(studentId);
-
-    }
-
-    public static boolean CheckStudentId(String Id){
-        try {
-            if (!Id.substring(0, 4).equals("aluno"))
-            {
-                System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of " + Id);
-                return false;
-            }
-
-            if (Id.substring(5).length() != 4)
-                throw new SmallNumberException();
-
-            Integer.parseInt(Id.substring(5));
-            return true;
-
-        } catch (NumberFormatException e) {
-            System.err.println("Error: wrong format for student ID, write a number with 4 digits");
-            return false;
-        }
-        catch (StringIndexOutOfBoundsException e)
-        {
-            System.err.println("Error: wrong format for student ID, write aluno + 4 digit number instead of "+Id);
-            return false;
-        }
-        catch (SmallNumberException e)
-        {
-            System.err.println("Error: wrong format for student ID, number must have 4 digits");
-            return false;
-        }
-    }
-
-    public static boolean CheckStudentName(String studentName){
-        return studentName.matches("/^[A-Z]+[a-z]*{3,30}$/");
 
     }
 
@@ -127,9 +81,5 @@ public class Utils {
         return "INVALID";
 
     }
-
-
-
-
 
 }

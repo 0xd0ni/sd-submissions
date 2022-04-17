@@ -2,7 +2,7 @@ package pt.ulisboa.tecnico.classes.classserver;
 
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
-import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer;
+import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerClassServer.*;
 import pt.ulisboa.tecnico.classes.contract.classserver.ClassServerServiceGrpc;
 
 
@@ -22,19 +22,13 @@ public class ClassServerToServerFrontend {
 
     }
 
-    public String getServerFlag() {
-        return serverFlag;
-
-    }
-
     public void setupServer(String host,int port) {
 
         this.channel= ManagedChannelBuilder.forAddress(host, port).usePlaintext().build();
         this.stub = ClassServerServiceGrpc.newBlockingStub(channel);
     }
 
-    public ClassServerClassServer.PropagateStateResponse setPropagate(ClassServerClassServer.PropagateStateRequest
-                                                                              request) {
+    public PropagateStateResponse setPropagate(PropagateStateRequest request) {
         return  stub.propagateState(request);
 
     }

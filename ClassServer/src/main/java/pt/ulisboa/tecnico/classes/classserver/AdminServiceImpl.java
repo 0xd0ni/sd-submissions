@@ -4,6 +4,7 @@ package pt.ulisboa.tecnico.classes.classserver;
 import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminServiceGrpc;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
@@ -43,25 +44,25 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
 
         if(server.getActivityStatus()) {
             debug(" 'activate' building the response [server already active]");
-            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.ACTIVE_SERVER).build();
+            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().
+                    setCode(ResponseCode.ACTIVE_SERVER).build();
 
 
             debug(" 'activate' responding to the request");
             responseObserver.onNext(response);
-            responseObserver.onCompleted();
 
         } else {
             server.setActivityStatus(true);
-            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.OK).build();
+            AdminClassServer.ActivateResponse response = AdminClassServer.ActivateResponse.newBuilder().
+                    setCode(ResponseCode.OK).build();
 
 
             debug(" 'activate' responding to the request");
             responseObserver.onNext(response);
-            responseObserver.onCompleted();
 
         }
+        responseObserver.onCompleted();
+        debug(" 'activate' completed");
 
     }
 
@@ -75,24 +76,23 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
             server.setActivityStatus(false);
 
             debug(" 'deactivate' building the response ");
-            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.OK).build();
+            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().
+                    setCode(ResponseCode.OK).build();
 
 
             debug(" 'deactivate' responding to the request");
             responseObserver.onNext(response);
-            responseObserver.onCompleted();
 
         } else {
 
-            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().setCode(
-                    ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            AdminClassServer.DeactivateResponse response = AdminClassServer.DeactivateResponse.newBuilder().
+                    setCode(ResponseCode.INACTIVE_SERVER).build();
 
             debug(" 'deactivate' responding to the request");
             responseObserver.onNext(response);
-            responseObserver.onCompleted();
-
         }
+        responseObserver.onCompleted();
+        debug(" 'deactivate' completed");
 
     }
 
@@ -125,16 +125,16 @@ public class AdminServiceImpl extends AdminServiceGrpc.AdminServiceImplBase {
         debug("dump...");
 
         debug(" 'dump' building the response");
-        AdminClassServer.DumpResponse response = AdminClassServer.DumpResponse.newBuilder().setCode(
-                ClassesDefinitions.ResponseCode.OK).setClassState(
-                ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
-                        _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
-                        _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
-                        _class.getDiscarded()))).build();
+        AdminClassServer.DumpResponse response = AdminClassServer.DumpResponse.newBuilder().setCode(ResponseCode.OK).
+                setClassState(ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).
+                        setOpenEnrollments(_class.getOpenEnrollments()).
+                        addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
+                        addAllDiscarded(Utils.StudentWrapper(_class.getDiscarded()))).build();
 
         debug(" 'dump' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        debug(" 'dump' completed");
 
     }
 

@@ -5,11 +5,12 @@ import io.grpc.stub.StreamObserver;
 import pt.ulisboa.tecnico.classes.classserver.domain.ClassState;
 import pt.ulisboa.tecnico.classes.classserver.domain.Student;
 import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions;
+import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ResponseCode;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorServiceGrpc;
-import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer;
+import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.*;
 import pt.ulisboa.tecnico.classes.classserver.domain.ServerInstance;
-
 import java.util.logging.Logger;
+
 
 public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceImplBase {
 
@@ -33,21 +34,24 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
     }
 
+
     @Override
-    public synchronized void openEnrollments(ProfessorClassServer.OpenEnrollmentsRequest request,
-                                StreamObserver<ProfessorClassServer.OpenEnrollmentsResponse> responseObserver) {
+    public synchronized void openEnrollments(OpenEnrollmentsRequest request,
+                                StreamObserver<OpenEnrollmentsResponse> responseObserver) {
 
         debug("openEnrollments");
 
         debug(" 'openEnrollments' checking for server Activity Status");
         if(!server.getActivityStatus()) {
 
-            ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    INACTIVE_SERVER).build();
 
+            debug(" 'openEnrollments' responding to the request [due to validation]");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'openEnrollments' completed");
+
 
 
         }
@@ -55,99 +59,104 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         debug(" 'openEnrollments' checking for secondary server");
         if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
 
-            ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+            OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    WRITING_NOT_SUPPORTED).build();
 
+            debug(" 'openEnrollments' responding to the request [due to validation]");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'openEnrollments' completed");
 
         }
 
-        Integer capacity = request.getCapacity();
+        int capacity = request.getCapacity();
 
-
-        debug(" 'openEnrollment' performing validations");
+        debug(" 'openEnrollments' performing validations");
         if(_class.getOpenEnrollments()) {
 
-            debug(" 'openEnrollment' building the response");
-            ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_OPENED).build();
-            debug(" 'openEnrollment' responding to the request [due to validation]");
+            debug(" 'openEnrollments' building the response");
+            OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    ENROLLMENTS_ALREADY_OPENED).build();
+
+            debug(" 'openEnrollments' responding to the request [due to validation]");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'openEnrollments' completed");
 
         }
         if(capacity <= 0) {
-            debug(" 'openEnrollment' building the response");
-            ProfessorClassServer.OpenEnrollmentsResponse response =
-                    ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.UNRECOGNIZED).build();
+            debug(" 'openEnrollments' building the response");
+            OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    UNRECOGNIZED).build();
 
-            debug(" 'openEnrollment' responding to the request [due to validation]");
+            debug(" 'openEnrollments' responding to the request [due to validation]");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-
+            debug(" 'openEnrollments' completed");
         }
 
         debug(" 'openEnrollments' setting the new capacity ");
-        _class.setCapacity(capacity.intValue());
+        _class.setCapacity(capacity);
         debug(" 'openEnrollments' setting the enrollment status to opened");
         _class.setOpenEnrollments(true);
         debug(" 'openEnrollments' setting the internal capacity of a class");
         _class.setCurrentCapacity(0);
 
         debug(" 'openEnrollments' building the response");
-        ProfessorClassServer.OpenEnrollmentsResponse response =
-                ProfessorClassServer.OpenEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+        OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.OK).build();
 
         debug(" 'openEnrollments' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-
+        debug(" 'openEnrollments' completed");
 
     }
 
+
     @Override
-    public synchronized void closeEnrollments(ProfessorClassServer.CloseEnrollmentsRequest closeRequest,
-                                 StreamObserver<ProfessorClassServer.CloseEnrollmentsResponse> responseObserver) {
+    public synchronized void closeEnrollments(CloseEnrollmentsRequest closeRequest,
+                                 StreamObserver<CloseEnrollmentsResponse> responseObserver) {
 
         debug("closeEnrollments");
 
-        debug(" 'closeEnrollments' checking for server Activity Status");
         if(!server.getActivityStatus()) {
+            debug(" 'closeEnrollments' checking for server Activity Status");
 
-            ProfessorClassServer.CloseEnrollmentsResponse response =
-                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
-
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-
-
-        }
-
-        debug(" 'closeEnrollments' checking for secondary server");
-        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
-
-            ProfessorClassServer.CloseEnrollmentsResponse response =
-                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
-
-        }
-
-        debug(" 'closeEnrollments' performing validation");
-        if(!_class.getOpenEnrollments()) {
-
-            debug(" 'closeEnrollments' building the response [due to validation]");
-            ProfessorClassServer.CloseEnrollmentsResponse response =
-                    ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.ENROLLMENTS_ALREADY_CLOSED).build();
+            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    INACTIVE_SERVER).build();
 
             debug(" 'closeEnrollments' responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'closeEnrollments' completed");
+
+
+        }
+
+        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+            debug(" 'closeEnrollments' checking for secondary server");
+
+            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    WRITING_NOT_SUPPORTED).build();
+
+            debug(" 'closeEnrollments' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            debug(" 'closeEnrollments' completed");
+
+        }
+
+        if(!_class.getOpenEnrollments()) {
+            debug(" 'closeEnrollments' checking for enrollments status");
+
+            debug(" 'closeEnrollments' building the response [due to validation]");
+            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                    ENROLLMENTS_ALREADY_CLOSED).build();
+
+            debug(" 'closeEnrollments' responding to the request");
+            responseObserver.onNext(response);
+            responseObserver.onCompleted();
+            debug(" 'closeEnrollments' completed");
 
         }
 
@@ -156,54 +165,53 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         _class.setOpenEnrollments(false);
 
         debug(" 'closeEnrollments building the response");
-        ProfessorClassServer.CloseEnrollmentsResponse response =
-                ProfessorClassServer.CloseEnrollmentsResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
-
+        CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.OK).build();
 
         debug(" 'closeEnrollments responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
-        
+        debug(" 'closeEnrollments' completed");
 
     }
 
 
     @Override
-    public synchronized void listClass(ProfessorClassServer.ListClassRequest listRequest,
-                          StreamObserver<ProfessorClassServer.ListClassResponse> responseObserver) {
+    public synchronized void listClass(ListClassRequest listRequest,
+                          StreamObserver<ListClassResponse> responseObserver) {
 
         debug("listClass");
 
-        debug(" 'listClass' checking for server Activity status");
         if(!server.getActivityStatus()) {
 
-            ProfessorClassServer.ListClassResponse response =
-                    ProfessorClassServer.ListClassResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+            debug(" 'listClass' checking for server Activity status");
+
+            ListClassResponse response = ListClassResponse.newBuilder().setCode(ResponseCode.INACTIVE_SERVER).build();
 
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'listClass' completed");
 
         }
 
         debug(" 'listClass' performs building the response");
-        ProfessorClassServer.ListClassResponse response = ProfessorClassServer.ListClassResponse.newBuilder().setCode(
-              ClassesDefinitions.ResponseCode.OK).setClassState(
-                      ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
-                              _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
-                                      _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
-                                              _class.getDiscarded()))).build();
+        ListClassResponse response = ListClassResponse.newBuilder().setCode(ResponseCode.OK).
+                setClassState(ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).
+                        setOpenEnrollments(_class.getOpenEnrollments()).
+                        addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
+                        addAllDiscarded(Utils.StudentWrapper(_class.getDiscarded()))).build();
 
 
         debug(" 'listClass' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();
+        debug(" 'listClass' completed");
 
     }
 
+
     @Override
-    public synchronized void cancelEnrollment(ProfessorClassServer.CancelEnrollmentRequest cancelRequest,
-                                  StreamObserver<ProfessorClassServer.CancelEnrollmentResponse> responseObserver) {
+    public synchronized void cancelEnrollment(CancelEnrollmentRequest cancelRequest,
+                                  StreamObserver<CancelEnrollmentResponse> responseObserver) {
 
         debug("cancelEnrollments...");
 
@@ -211,36 +219,39 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
             debug(" 'cancelEnrollment' checking for server Activity status");
             if(!server.getActivityStatus()) {
-
-                ProfessorClassServer.CancelEnrollmentResponse response =
-                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
-                                ClassesDefinitions.ResponseCode.INACTIVE_SERVER).build();
+                CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.
+                        INACTIVE_SERVER).build();
 
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
 
             }
 
-            debug(" 'closeEnrollments' checking for secondary server");
+            debug(" 'cancelEnrollments' checking for secondary server");
             if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+                CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.
+                        WRITING_NOT_SUPPORTED).build();
 
-                ProfessorClassServer.CancelEnrollmentResponse response =
-                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
-                                ClassesDefinitions.ResponseCode.WRITING_NOT_SUPPORTED).build();
+                debug(" 'cancelEnrollments' building the response ");
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                debug(" 'cancelEnrollments' completed");
 
             }
 
-            debug(" 'cancelEnrollments' performs validation");
             String studentId = cancelRequest.getStudentId();
+
             if(!Utils.CheckForUserExistence(studentId,_class)) {
 
-                ProfessorClassServer.CancelEnrollmentResponse response =
-                        ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
-                                ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT).build();
+                debug(" 'cancelEnrollments' checking for user existence");
 
+                CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.
+                        NON_EXISTING_STUDENT).build();
 
+                debug(" 'cancelEnrollments' building the response ");
                 responseObserver.onNext(response);
                 responseObserver.onCompleted();
+                debug(" 'cancelEnrollments' completed");
 
             }
             debug(" 'cancelEnrollments' performing the program's logic");
@@ -258,21 +269,20 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
 
             debug(" 'cancelEnrollments' building the response ");
-            ProfessorClassServer.CancelEnrollmentResponse response =
-                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(ClassesDefinitions.ResponseCode.OK).build();
+            CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.OK).build();
 
             debug(" 'cancelEnrollments' responding to the request...");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
+            debug(" 'cancelEnrollments' completed");
 
 
         }catch(NullPointerException e) {
             debug("Exception was thrown while executing 'cancelEnrollment ");
 
             debug(" 'cancelEnrollments' building the response ");
-            ProfessorClassServer.CancelEnrollmentResponse response =
-                    ProfessorClassServer.CancelEnrollmentResponse.newBuilder().setCode(
-                            ClassesDefinitions.ResponseCode.NON_EXISTING_STUDENT).build();
+            CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.
+                    NON_EXISTING_STUDENT).build();
 
             debug(" 'cancelEnrollments' responding to the request [failed] ");
             responseObserver.onNext(response);
@@ -281,9 +291,8 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         }
         catch(IllegalStateException e){
             debug("Exception was thrown while executing 'cancelEnrollment ");
-            System.out.printf("");
+            System.out.print("");
         }
-
 
     }
 
