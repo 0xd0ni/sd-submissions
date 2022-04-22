@@ -68,12 +68,12 @@ public class ClassServer {
       ServerInstance serverInstance = new ServerInstance();
       ClassState _class = new ClassState();
 
-
       // Create a new server with multiple services to listen on port.
-      Server server = ServerBuilder.forPort(Integer.parseInt(port)).addService(
-              new AdminServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).addService(
-                      new ProfessorServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).addService(
-                              new StudentServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).build();
+      Server server = ServerBuilder.forPort(Integer.parseInt(port))
+              .addService(new AdminServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port))
+              .addService(new ProfessorServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port))
+              .addService(new StudentServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port))
+              .addService(new ClassServerServiceImpl(serverInstance,_class,debugFlag,serverFlag,host,port)).build();
 
 
       // Initialize timer for propagating replica
@@ -83,45 +83,63 @@ public class ClassServer {
 
       System.out.println("Server started");
 
-      if(!serverFlag.equals(SECONDARY)) {
-          ClassServerToServerFrontend serversCommunication  = new ClassServerToServerFrontend(serverFlag);
+      System.out.println("Creating server communication frontend");
+      ClassServerToServerFrontend serversCommunication  = new ClassServerToServerFrontend(serverFlag);
+      String flag = "";
 
-          ClassServerNamingServer.LookupRequest requestServer =
-                  ClassServerNamingServer.
-                          LookupRequest.
-                          newBuilder().
-                          setServiceName(SERVICE).
-                          addQualifiers(SECONDARY).
-                          build();
+      if(serverFlag.equals(SECONDARY))
+          flag = PRIMARY;
+      else if(serverFlag.equals(PRIMARY))
+          flag = SECONDARY;
 
-          ClassServerNamingServer.LookupResponse response = namingServerFrontend.lookup(requestServer);
+      System.out.println("Creating server lookup request");
+      List<ClassesDefinitions.ServerEntry> lst = new ArrayList<>();
+      ClassServerNamingServer.LookupResponse response = null;
+      while (lst.isEmpty())
+      {
+          ClassServerNamingServer.LookupRequest requestServer = ClassServerNamingServer.LookupRequest.newBuilder()
+              .setServiceName(SERVICE)
+              .addQualifiers(flag)
+              .build();
+          response = namingServerFrontend.lookup(requestServer);
+          lst = response.getServerList();
+      }
+      System.out.println("Got server lookup response");
 
-          ClassesDefinitions.ServerEntry entry = response.getServer(0);
+      ClassesDefinitions.ServerEntry entry = response.getServer(0);
 
-          String host = entry.getHostPort().split(":")[0];
-          int port = Integer.parseInt(entry.getHostPort().split(":")[1]);
+      String host = entry.getHostPort().split(":")[0];
+      int port = Integer.parseInt(entry.getHostPort().split(":")[1]);
 
-          serversCommunication.setupServer(host,port);
+      System.out.println("Saving server info");
+      System.out.println("ADDRESS: "+host+":"+port);
+      serversCommunication.setupServer(host,port);
+      System.out.println("Server communication server set up");
 
+      if(!serverFlag.equals(SECONDARY)){
           timer.scheduleAtFixedRate(new TimerTask() {
               @Override
               public void run() {
+                  System.out.println("Creating Propagate state");
+                  System.out.println("Creating copy of ClassState");
                   ClassesDefinitions.ClassState classState =
                           ClassesDefinitions.ClassState.newBuilder().
                                   setCapacity(_class.getCapacity()).setOpenEnrollments(_class.getOpenEnrollments()).
                                   addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
                                   addAllDiscarded(Utils.StudentWrapper(_class.getDiscarded())).build();
 
+                  System.out.println("Copy of ClassState created");
+                  System.out.println("Creating PropagateState Request");
                   ClassServerClassServer.PropagateStateRequest requestPropagate =
-                          ClassServerClassServer.
-                                  PropagateStateRequest.
-                                  newBuilder().setClassState(classState).build();
+                          ClassServerClassServer.PropagateStateRequest.newBuilder()
+                                  .setClassState(classState).build();
+                  System.out.println("PropagateState Request created");
 
-
+                  System.out.println("Calling PropagateState");
                   serversCommunication.setPropagate(requestPropagate);
+                  System.out.println("State successfully propagated");
               }
-          }, 60*1000, 60*1000);
-
+          }, 10*1000, 10*1000);
       }
 
       Signal.handle(new Signal(SIGINT), sig -> {

@@ -30,7 +30,6 @@ public class ClassServerToServerFrontend {
 
     public PropagateStateResponse setPropagate(PropagateStateRequest request) {
         return  stub.propagateState(request);
-
     }
 
 }
