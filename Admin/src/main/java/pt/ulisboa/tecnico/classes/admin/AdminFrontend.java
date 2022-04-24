@@ -56,4 +56,17 @@ public class AdminFrontend implements AutoCloseable {
     public final void close() {
         channel.shutdown();
     }
+
+    public ActivateGossipResponse setActivateGossip(ActivateGossipRequest req) {
+        return stub_specific.activateGossip(req);
+    }
+
+    public DeactivateGossipResponse setDeactivateGossip(DeactivateGossipRequest req) {
+        return stub_specific.deactivateGossip(req);
+    }
+
+    public GossipResponse setGossip(GossipRequest req) {
+        return stub_specific.gossip(req);
+    }
+
 }

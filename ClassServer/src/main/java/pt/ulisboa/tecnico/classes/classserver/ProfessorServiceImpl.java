@@ -72,7 +72,7 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         int capacity = request.getCapacity();
 
         debug(" 'openEnrollments' performing validations");
-        if(_class.getOpenEnrollments()) {
+        if(server.getTurmasRep().getOpenEnrollments()) {
 
             debug(" 'openEnrollments' building the response");
             OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.
@@ -96,11 +96,11 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
         }
 
         debug(" 'openEnrollments' setting the new capacity ");
-        _class.setCapacity(capacity);
+        server.getTurmasRep().setCapacity(capacity);
         debug(" 'openEnrollments' setting the enrollment status to opened");
-        _class.setOpenEnrollments(true);
+        server.getTurmasRep().setOpenEnrollments(true);
         debug(" 'openEnrollments' setting the internal capacity of a class");
-        _class.setCurrentCapacity(0);
+        server.getTurmasRep().setCurrentCapacity(0);
 
         debug(" 'openEnrollments' building the response");
         OpenEnrollmentsResponse response = OpenEnrollmentsResponse.newBuilder().setCode(ResponseCode.OK).build();
@@ -118,59 +118,76 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
                                  StreamObserver<CloseEnrollmentsResponse> responseObserver) {
 
         debug("closeEnrollments");
+        try{
+            if(!server.getActivityStatus()) {
+                debug(" 'closeEnrollments' checking for server Activity Status");
 
-        if(!server.getActivityStatus()) {
-            debug(" 'closeEnrollments' checking for server Activity Status");
+                CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                        INACTIVE_SERVER).build();
 
-            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
-                    INACTIVE_SERVER).build();
+                debug(" 'closeEnrollments' responding to the request");
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                debug(" 'closeEnrollments' completed");
 
-            debug(" 'closeEnrollments' responding to the request");
+
+            }
+
+            if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
+                debug(" 'closeEnrollments' checking for secondary server");
+
+                CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                        WRITING_NOT_SUPPORTED).build();
+
+                debug(" 'closeEnrollments' responding to the request");
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                debug(" 'closeEnrollments' completed");
+
+            }
+
+            if(!server.getTurmasRep().getOpenEnrollments()) {
+                debug(" 'closeEnrollments' checking for enrollments status");
+
+                debug(" 'closeEnrollments' building the response [due to validation]");
+                CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
+                        ENROLLMENTS_ALREADY_CLOSED).build();
+
+                debug(" 'closeEnrollments' responding to the request");
+                responseObserver.onNext(response);
+                responseObserver.onCompleted();
+                debug(" 'closeEnrollments' completed");
+
+            }
+
+
+            debug(" 'closeEnrollments'  setting enrollment status");
+            server.getTurmasRep().setOpenEnrollments(false);
+
+            debug(" 'closeEnrollments building the response");
+            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.OK).build();
+
+            debug(" 'closeEnrollments responding to the request");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
             debug(" 'closeEnrollments' completed");
 
+        }catch(NullPointerException e) {
+            debug("Exception was thrown while executing 'closeEnrollments ");
 
-        }
-
-        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
-            debug(" 'closeEnrollments' checking for secondary server");
-
+            debug(" 'closeEnrollments' building the response ");
             CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
-                    WRITING_NOT_SUPPORTED).build();
+                    NON_EXISTING_STUDENT).build();
 
-            debug(" 'closeEnrollments' responding to the request");
+            debug(" 'closeEnrollments' responding to the request [failed] ");
             responseObserver.onNext(response);
             responseObserver.onCompleted();
-            debug(" 'closeEnrollments' completed");
 
         }
-
-        if(!_class.getOpenEnrollments()) {
-            debug(" 'closeEnrollments' checking for enrollments status");
-
-            debug(" 'closeEnrollments' building the response [due to validation]");
-            CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.
-                    ENROLLMENTS_ALREADY_CLOSED).build();
-
-            debug(" 'closeEnrollments' responding to the request");
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-            debug(" 'closeEnrollments' completed");
-
+        catch(IllegalStateException e){
+            debug("Exception was thrown while executing 'closeEnrollments' ");
+            System.out.print("");
         }
-
-
-        debug(" 'closeEnrollments'  setting enrollment status");
-        _class.setOpenEnrollments(false);
-
-        debug(" 'closeEnrollments building the response");
-        CloseEnrollmentsResponse response = CloseEnrollmentsResponse.newBuilder().setCode(ResponseCode.OK).build();
-
-        debug(" 'closeEnrollments responding to the request");
-        responseObserver.onNext(response);
-        responseObserver.onCompleted();
-        debug(" 'closeEnrollments' completed");
 
     }
 
@@ -195,10 +212,10 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
         debug(" 'listClass' performs building the response");
         ListClassResponse response = ListClassResponse.newBuilder().setCode(ResponseCode.OK).
-                setClassState(ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).
-                        setOpenEnrollments(_class.getOpenEnrollments()).
-                        addAllEnrolled(Utils.StudentWrapper(_class.getEnrolled())).
-                        addAllDiscarded(Utils.StudentWrapper(_class.getDiscarded()))).build();
+                setClassState(ClassesDefinitions.ClassState.newBuilder().setCapacity(server.getTurmasRep().getCapacity()).
+                        setOpenEnrollments(server.getTurmasRep().getOpenEnrollments()).
+                        addAllEnrolled(Utils.StudentWrapper(server.getTurmasRep().getEnrolled())).
+                        addAllDiscarded(Utils.StudentWrapper(server.getTurmasRep().getDiscarded()))).build();
 
 
         debug(" 'listClass' responding to the request");
@@ -227,21 +244,9 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
 
             }
 
-            debug(" 'cancelEnrollments' checking for secondary server");
-            if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
-                CancelEnrollmentResponse response = CancelEnrollmentResponse.newBuilder().setCode(ResponseCode.
-                        WRITING_NOT_SUPPORTED).build();
-
-                debug(" 'cancelEnrollments' building the response ");
-                responseObserver.onNext(response);
-                responseObserver.onCompleted();
-                debug(" 'cancelEnrollments' completed");
-
-            }
-
             String studentId = cancelRequest.getStudentId();
 
-            if(!Utils.CheckForUserExistence(studentId,_class)) {
+            if(!Utils.CheckForUserExistence(studentId,server.getTurmasRep())) {
 
                 debug(" 'cancelEnrollments' checking for user existence");
 
@@ -257,15 +262,15 @@ public class ProfessorServiceImpl extends ProfessorServiceGrpc.ProfessorServiceI
             debug(" 'cancelEnrollments' performing the program's logic");
 
             debug(" 'cancelEnrollments' obtaining the student ");
-            Student student = _class.getRegistered().get(studentId);
+            Student student = server.getTurmasRep().getRegistered().get(studentId);
             debug(" 'cancelEnrollments' removing the student from the enrolled list");
-            _class.getEnrolled().remove(student);
+            server.getTurmasRep().getEnrolled().remove(student);
             debug(" 'cancelEnrollments' removing the student from the system registry");
-            _class.getRegistered().remove(studentId);
+            server.getTurmasRep().getRegistered().remove(studentId);
             debug(" 'cancelEnrollments' adding the student to the discarded list ");
-            _class.addDiscard(student);
+            server.getTurmasRep().addDiscard(student);
             debug(" 'cancelEnrollments' updating the total number of enrolled students");
-            _class.downEnrolled();
+            server.getTurmasRep().downEnrolled();
 
 
             debug(" 'cancelEnrollments' building the response ");

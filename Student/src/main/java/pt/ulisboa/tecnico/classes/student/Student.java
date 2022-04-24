@@ -27,7 +27,7 @@ public class Student {
   private static String id;
   private static final String EXIT_CMD = "exit";
   private static final String LIST_CMD = "list";
-  private static final String E_CMD = "enroll";
+  private static final String ENR_CMD = "enroll";
 
 
   public static void main(String[] args) {
@@ -91,12 +91,11 @@ public class Student {
             case LIST_CMD -> {
 
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
@@ -107,7 +106,7 @@ public class Student {
                 System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
 
-            case LOOK_CMD -> {
+            case LOOKUP_CMD -> {
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach(qualifier -> {
 
@@ -120,15 +119,14 @@ public class Student {
                       });
             }
 
-            case E_CMD -> {
+            case ENR_CMD -> {
 
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(

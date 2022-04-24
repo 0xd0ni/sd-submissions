@@ -41,6 +41,8 @@ public class Stringify {
       case INACTIVE_SERVER -> "The server is down.";
       case WRITING_NOT_SUPPORTED -> "The server you contacted does not support writes.";
       case ACTIVE_SERVER -> "The server is already active";
+      case GOSSIP_ACTIVATED -> "Gossip is already active and running";
+      case GOSSIP_DEACTIVATED -> "Gossip is already deactivated";
       default -> "Unknown error.";
     };
   }

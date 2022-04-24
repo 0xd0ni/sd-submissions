@@ -1,7 +1,6 @@
 package pt.ulisboa.tecnico.classes.professor;
 
-import
-        pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
+import pt.ulisboa.tecnico.classes.NamingServerGlobalFrontend;
 import pt.ulisboa.tecnico.classes.contract.naming.ClassServerNamingServer;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsRequest;
 import pt.ulisboa.tecnico.classes.contract.professor.ProfessorClassServer.OpenEnrollmentsResponse;
@@ -27,9 +26,9 @@ public class Professor {
 
   private static final String EXIT_CMD = "exit";
   private static final String LIST_CMD = "list";
-  private static final String OE_CMD = "openEnrollments";
-  private static final String CE_CMD = "closeEnrollments";
-  private static final String CAN_ENR_CMD = "cancelEnrollment";
+  private static final String OPEN_ENR_CMD = "openEnrollments";
+  private static final String CLOSE_ENR_CMD = "closeEnrollments";
+  private static final String CANCEL_ENR_CMD = "cancelEnrollment";
 
 
   public static void main(String[] args) {
@@ -79,12 +78,11 @@ public class Professor {
             case LIST_CMD -> {
 
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
@@ -95,7 +93,7 @@ public class Professor {
                 System.out.println(Stringify.format(ResponseCode.INACTIVE_SERVER)+"\n");
             }
 
-            case LOOK_CMD -> {
+            case LOOKUP_CMD -> {
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach( qualifier -> {
 
@@ -108,15 +106,14 @@ public class Professor {
                       });
             }
 
-            case OE_CMD -> {
+            case OPEN_ENR_CMD -> {
 
-              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"P");
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               int numStudents = Integer.parseInt(line[1]);
@@ -125,30 +122,28 @@ public class Professor {
               System.out.println(Stringify.format(oe_res.getCode())+"\n");
             }
 
-            case CE_CMD -> {
+            case CLOSE_ENR_CMD -> {
 
-              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"P");
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
               CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
               System.out.println(Stringify.format(ce_res.getCode())+"\n");
             }
-            case CAN_ENR_CMD -> {
+            case CANCEL_ENR_CMD -> {
 
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();

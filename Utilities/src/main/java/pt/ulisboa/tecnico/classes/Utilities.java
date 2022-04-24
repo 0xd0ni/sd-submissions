@@ -6,7 +6,7 @@ import pt.ulisboa.tecnico.classes.contract.ClassesDefinitions.ServerEntry;
 
 public class Utilities {
 
-    public static final String LOOK_CMD = "lookup";
+    public static final String LOOKUP_CMD = "lookup";
     public static final String SERVICE = "turmas";
     public static final String SIGINT = "INT";
     public static final String NAMING_HOST = "localhost";

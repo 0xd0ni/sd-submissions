@@ -67,12 +67,15 @@ public class ClassServerServiceImpl extends ClassServerServiceGrpc.ClassServerSe
         updated.setCurrentCapacity(studentList.size());
 
         server.setTurmasRep(updated);
+        this._class = updated;
 
         debug(" 'propagateState' building the response");
         ClassServerClassServer.PropagateStateResponse response =
                 ClassServerClassServer.PropagateStateResponse.newBuilder().setCode(
                         ClassesDefinitions.ResponseCode.OK).build();
 
+        System.out.println("CAPACIDADE 1"+server.getTurmasRep().getCapacity());
+        System.out.println("CAPACIDADE 2"+_class.getCapacity());
         debug(" 'propagateState' responding to the request");
         responseObserver.onNext(response);
         responseObserver.onCompleted();

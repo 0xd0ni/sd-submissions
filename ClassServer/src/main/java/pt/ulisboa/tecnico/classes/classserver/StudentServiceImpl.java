@@ -55,10 +55,10 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
         debug(" 'listClass' building the response");
         ListClassResponse response = ListClassResponse.newBuilder().setCode(ResponseCode.OK).setClassState(
-                ClassesDefinitions.ClassState.newBuilder().setCapacity(_class.getCapacity()).setOpenEnrollments(
-                        _class.getOpenEnrollments()).addAllEnrolled(Utils.StudentWrapper(
-                        _class.getEnrolled())).addAllDiscarded(Utils.StudentWrapper(
-                        _class.getDiscarded()))).build();
+                ClassesDefinitions.ClassState.newBuilder().setCapacity(server.getTurmasRep().getCapacity())
+                        .setOpenEnrollments(server.getTurmasRep().getOpenEnrollments())
+                        .addAllEnrolled(Utils.StudentWrapper(server.getTurmasRep().getEnrolled()))
+                        .addAllDiscarded(Utils.StudentWrapper(server.getTurmasRep().getDiscarded()))).build();
 
         debug(" 'listClass' responding to the request");
         responseObserver.onNext(response);
@@ -85,17 +85,6 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
             debug(" 'enroll' completed");
 
         }
-        if(server.getType().equals(Utils.ServerSpecification(Server.SECONDARY))) {
-            debug(" 'enroll' checking for secondary server");
-
-            EnrollResponse response = EnrollResponse.newBuilder().setCode(ClassesDefinitions.
-                    ResponseCode.WRITING_NOT_SUPPORTED).build();
-
-            responseObserver.onNext(response);
-            responseObserver.onCompleted();
-            debug(" 'enroll' completed");
-
-        }
 
         ClassesDefinitions.Student toEnroll = enrollRequest.getStudent();
         String studentName = toEnroll.getStudentName();
@@ -105,7 +94,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         Student student = new Student(studentId,studentName);
 
         debug(" 'enroll' performing validations");
-        if(!_class.getOpenEnrollments()) {
+        if(!server.getTurmasRep().getOpenEnrollments()) {
             debug(" 'enroll' checking for open Enrollments");
 
             debug(" 'enroll' responding to the request [due to validation]");
@@ -116,7 +105,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
 
         }
-        else if(Utils.CheckForUserExistence(studentId,_class)) {
+        else if(Utils.CheckForUserExistence(studentId,server.getTurmasRep())) {
             debug(" 'enroll' checking for user Existence");
 
             debug(" 'enroll' responding to the request [due to validation]");
@@ -127,7 +116,7 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
 
 
         }
-        else if(_class.checkForFullCapacity()) {
+        else if(server.getTurmasRep().checkForFullCapacity()) {
             debug(" 'enroll' checking for full capacity");
 
             debug(" 'enroll' responding to the request [due to validation]");
@@ -139,11 +128,11 @@ public class StudentServiceImpl extends StudentServiceGrpc.StudentServiceImplBas
         else {
 
             debug(" 'enroll' enrolling the student");
-            _class.addEnroll(student);
+            server.getTurmasRep().addEnroll(student);
             debug(" 'enroll' adding the student to the system registry");
-            _class.addToRegistry(studentId, student);
+            server.getTurmasRep().addToRegistry(studentId, student);
             debug(" 'enroll' increasing the number of enrolled students");
-            _class.upEnrolled();
+            server.getTurmasRep().upEnrolled();
 
 
             debug(" 'enroll' responding to the request");

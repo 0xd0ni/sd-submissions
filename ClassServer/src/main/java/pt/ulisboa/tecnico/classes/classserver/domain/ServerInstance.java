@@ -1,6 +1,8 @@
 package pt.ulisboa.tecnico.classes.classserver.domain;
 
 
+import pt.ulisboa.tecnico.classes.classserver.ClassServerToServerFrontend;
+
 // This class represents a server instance
 public class ServerInstance {
 
@@ -14,6 +16,21 @@ public class ServerInstance {
 
     private boolean activityStatus;
 
+    private boolean gossipFlag = false;
+
+    ClassServerToServerFrontend serversCommunication  = new ClassServerToServerFrontend(type);
+
+    public ClassServerToServerFrontend getServersCommunication() {
+        return serversCommunication;
+    }
+
+    public boolean getGossipFlag() {
+        return gossipFlag;
+    }
+
+    public void setGossipFlag(boolean gossipFlag) {
+        this.gossipFlag = gossipFlag;
+    }
 
     // ClassState classState, boolean debugValue,String type,String host, String port
 

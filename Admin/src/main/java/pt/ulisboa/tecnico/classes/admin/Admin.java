@@ -2,6 +2,12 @@ package pt.ulisboa.tecnico.classes.admin;
 
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRequest;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateGossipRequest;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateGossipRequest;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.GossipRequest;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateGossipResponse;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateGossipResponse;
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.GossipResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DeactivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.DumpResponse;
@@ -29,8 +35,11 @@ public class Admin {
   private static final String EXIT_CMD = "exit";
   private static final String ACTIV_CMD = "activate";
   private static final String DEACT_CMD = "deactivate";
-  private static final String LOOK_CMD = "lookup";
   private static final String DUMP_CMD = "dump";
+  private static final String ACTIV_GOSSIP = "activateGossip";
+  private static final String DEACT_GOSSIP = "deactivateGossip";
+  private static final String GOSSIP = "gossip";
+
 
 
 
@@ -117,7 +126,7 @@ public class Admin {
               System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
-            case LOOK_CMD -> {
+            case LOOKUP_CMD -> {
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach( qualifier -> {
 
@@ -133,18 +142,63 @@ public class Admin {
             case DEACT_CMD -> {
 
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY)) {
+              if(result.get(2).equals(PRIMARY))
                 p_count++;
-              }
-              else {
+              else
                 s_count++;
-              }
+
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
               System.out.println(Stringify.format(d_res.getCode())+"\n");
             }
+
+            case ACTIV_GOSSIP -> {
+
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY))
+                p_count++;
+              else
+                s_count++;
+
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+
+              ActivateGossipRequest req = ActivateGossipRequest.newBuilder().build();
+              ActivateGossipResponse res = frontend.setActivateGossip(req);
+              System.out.println(Stringify.format(res.getCode())+"\n");
+            }
+
+            case DEACT_GOSSIP -> {
+
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY))
+                p_count++;
+              else
+                s_count++;
+
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+
+              DeactivateGossipRequest req = DeactivateGossipRequest.newBuilder().build();
+              DeactivateGossipResponse res = frontend.setDeactivateGossip(req);
+              System.out.println(Stringify.format(res.getCode())+"\n");
+            }
+
+            case GOSSIP -> {
+
+              ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              if(result.get(2).equals(PRIMARY))
+                p_count++;
+              else
+                s_count++;
+
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+
+              GossipRequest req = GossipRequest.newBuilder().build();
+              GossipResponse res = frontend.setGossip(req);
+              System.out.println(Stringify.format(res.getCode())+"\n");
+            }
+
             default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");
           }
         } catch (NullPointerException e) {
