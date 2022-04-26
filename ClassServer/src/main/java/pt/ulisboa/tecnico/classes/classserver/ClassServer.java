@@ -12,15 +12,24 @@ import sun.misc.Signal;
 import java.util.*;
 import java.io.IOException;
 import java.util.TimerTask;
+import java.util.logging.Logger;
 
 import static pt.ulisboa.tecnico.classes.Utilities.*;
 
 public class ClassServer {
 
-  private static String port;
-  private static String host;
-  private static String serverFlag;
-  private static String debugInput;
+    private static final Logger LOGGER = Logger.getLogger(ClassServer.class.getName());
+    private static String port;
+    private static String host;
+    private static String serverFlag;
+    private static String debugInput;
+    static boolean debugFlag = false;
+
+    public static void debug(String msg) {
+        if(debugFlag) {
+            LOGGER.info(msg);
+        }
+    }
 
   public static void main(String[] args) throws IOException, InterruptedException {
       System.out.println(ClassServer.class.getSimpleName());
@@ -36,7 +45,6 @@ public class ClassServer {
           return;
       }
 
-      boolean debugFlag = false;
       if(args.length == 3) {
           host = args[0];
           port = args[1];;
@@ -83,7 +91,7 @@ public class ClassServer {
 
       System.out.println("Server started");
 
-      System.out.println("Creating server communication frontend");
+      debug("Creating server communication frontend");
       String flag = "";
 
       if(serverFlag.equals(SECONDARY))
@@ -91,7 +99,7 @@ public class ClassServer {
       else if(serverFlag.equals(PRIMARY))
           flag = SECONDARY;
 
-      System.out.println("Creating server lookup request");
+      debug("Creating server lookup request");
       List<ClassesDefinitions.ServerEntry> lst = new ArrayList<>();
       ClassServerNamingServer.LookupResponse response = null;
       while (lst.isEmpty())
@@ -103,19 +111,30 @@ public class ClassServer {
           response = namingServerFrontend.lookup(requestServer);
           lst = response.getServerList();
       }
-      System.out.println("Got server lookup response");
+      debug("Got server lookup response");
 
       ClassesDefinitions.ServerEntry entry = response.getServer(0);
 
       String host = entry.getHostPort().split(":")[0];
       int port = Integer.parseInt(entry.getHostPort().split(":")[1]);
 
-      System.out.println("Saving server info");
-      System.out.println("ADDRESS: "+host+":"+port);
-      serverInstance.getServersCommunication().setupServer(host,port);
-      System.out.println("Server communication server set up");
+      String third_host = null;
+      int third_port = 0;
+      if (serverFlag.equals(PRIMARY))
+      {
+          ClassesDefinitions.ServerEntry new_entry = response.getServer(1);
+          third_host = entry.getHostPort().split(":")[0];
+          third_port = Integer.parseInt(entry.getHostPort().split(":")[1]);
+      }
 
-      if(!serverFlag.equals(SECONDARY)){
+      lst.stream().forEach(serverEntry -> debug("Server found: "+serverEntry.getHostPort()));
+
+      debug("Saving server info");
+      debug("Address: "+host+":"+port);
+      serverInstance.getServersCommunication().setupServer(host,port);
+      debug("Server communication server set up");
+
+      if(serverFlag.equals(SECONDARY)){
       timer.scheduleAtFixedRate(
           new TimerTask() {
             @Override
@@ -124,8 +143,8 @@ public class ClassServer {
               } else {
                 if (!serverInstance.getActivityStatus()) {
                 } else {
-                  System.out.println("Creating Propagate state 1");
-                  System.out.println("Creating copy of ClassState");
+                  debug("Creating Propagate state");
+                  debug("Creating copy of ClassState");
                   ClassesDefinitions.ClassState classState =
                       ClassesDefinitions.ClassState.newBuilder()
                           .setCapacity(serverInstance.getTurmasRep().getCapacity())
@@ -134,23 +153,63 @@ public class ClassServer {
                           .addAllDiscarded(Utils.StudentWrapper(serverInstance.getTurmasRep().getDiscarded()))
                           .build();
 
-                  System.out.println("Copy of ClassState created 1");
-                  System.out.println("Creating PropagateState Request");
+                  debug("Copy of ClassState created");
+                  debug("Creating PropagateState Request");
                   ClassServerClassServer.PropagateStateRequest requestPropagate =
                       ClassServerClassServer.PropagateStateRequest.newBuilder()
                           .setClassState(classState)
                           .build();
-                  System.out.println("PropagateState Request created");
+                  debug("PropagateState Request created");
 
-                  System.out.println("Calling PropagateState 1");
+                  debug("Calling PropagateState");
                   serverInstance.getServersCommunication().setPropagate(requestPropagate);
-                  System.out.println("State successfully propagated");
+                  debug("State successfully propagated");
                 }
               }
             }
           },
           10 * 1000,
           10 * 1000);
+      }else if(serverFlag.equals(PRIMARY)){
+          String finalThird_host = third_host;
+          int finalThird_port = third_port;
+          timer.scheduleAtFixedRate(
+                  new TimerTask() {
+                      @Override
+                      public void run() {
+                          if (!serverInstance.getGossipFlag()) {
+                          } else {
+                              if (!serverInstance.getActivityStatus()) {
+                              } else {
+                                  debug("Creating Propagate state");
+                                  debug("Creating copy of ClassState");
+                                  ClassesDefinitions.ClassState classState =
+                                          ClassesDefinitions.ClassState.newBuilder()
+                                                  .setCapacity(serverInstance.getTurmasRep().getCapacity())
+                                                  .setOpenEnrollments(serverInstance.getTurmasRep().getOpenEnrollments())
+                                                  .addAllEnrolled(Utils.StudentWrapper(serverInstance.getTurmasRep().getEnrolled()))
+                                                  .addAllDiscarded(Utils.StudentWrapper(serverInstance.getTurmasRep().getDiscarded()))
+                                                  .build();
+
+                                  debug("Copy of ClassState created");
+                                  debug("Creating PropagateState Request");
+                                  ClassServerClassServer.PropagateStateRequest requestPropagate =
+                                          ClassServerClassServer.PropagateStateRequest.newBuilder()
+                                                  .setClassState(classState)
+                                                  .build();
+                                  debug("PropagateState Request created");
+
+                                  debug("Calling PropagateState");
+                                  serverInstance.getServersCommunication().setPropagate(requestPropagate);
+                                  serverInstance.getServersCommunication().setupServer(finalThird_host, finalThird_port);
+                                  serverInstance.getServersCommunication().setPropagate(requestPropagate);
+                                  debug("State successfully propagated");
+                              }
+                          }
+                      }
+                  },
+                  10 * 1000,
+                  10 * 1000);
       }
 
       Signal.handle(new Signal(SIGINT), sig -> {

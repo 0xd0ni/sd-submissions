@@ -41,6 +41,11 @@ message ServerEntry {
   repeated string qualifiers = 2;
 }
 
+message Entry {
+  int32 key = 1;
+  int32 value = 2;
+}
+
 message ServiceEntry {
   string serviceName = 1;
   repeated ServerEntry serverEntries = 2;

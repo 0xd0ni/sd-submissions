@@ -1,5 +1,6 @@
 package pt.ulisboa.tecnico.classes.admin;
 
+import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateResponse;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateRequest;
 import pt.ulisboa.tecnico.classes.contract.admin.AdminClassServer.ActivateGossipRequest;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import static pt.ulisboa.tecnico.classes.Utilities.*;
@@ -39,9 +41,15 @@ public class Admin {
   private static final String ACTIV_GOSSIP = "activateGossip";
   private static final String DEACT_GOSSIP = "deactivateGossip";
   private static final String GOSSIP = "gossip";
+  private static final Logger LOGGER = Logger.getLogger(Admin.class.getName());
+  private static String debugInput;
+  static boolean debugFlag = false;
 
-
-
+  public static void debug(String msg) {
+    if(debugFlag) {
+      LOGGER.info(msg);
+    }
+  }
 
   public static void main(String[] args) {
 
@@ -54,10 +62,19 @@ public class Admin {
     int s_count = 1;
     Utilities look = new Utilities();
 
+    if (args.length == 1)
+    {
+      debugInput = args[0];
+      if(debugInput.equals(DEBUG)) {
+        debugFlag = true;
+      }
+    }
 
+    debug("Creating Admin Frontend");
     try (AdminFrontend frontend = new AdminFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
       Signal.handle(new Signal(SIGINT), sig -> {
+        debug("SIGINT found");
         System.out.println(EXIT_ADMIN);
         frontend.close();
         System.exit(SUCCESS);
@@ -90,20 +107,27 @@ public class Admin {
             case EXIT_CMD -> System.exit(0);
 
             case DUMP_CMD -> {
-
+              debug("Invoking dump command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              debug("Server set");
               if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
               }
               else {
+                debug("Increasing secondary count");
                 s_count++;
               }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
-
+              debug("Creating dump request");
               DumpRequest dump_req = DumpRequest.newBuilder().build();
+              debug("Dump request sent");
               DumpResponse dump_res = frontend.setDump(dump_req);
 
+              debug("Dump response arrived");
               if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.OK)
                 System.out.println(Stringify.format(frontend.getClassState(dump_res))+"\n");
               else if (ResponseCode.forNumber(frontend.getCodeDump(dump_res)) == ResponseCode.INACTIVE_SERVER)
@@ -111,22 +135,31 @@ public class Admin {
             }
 
             case ACTIV_CMD -> {
-
+              debug("Invoking activate command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
+              debug("Server set");
               if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
               }
               else {
+                debug("Increasing secondary count");
                 s_count++;
               }
-              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
 
+              debug("Setting up specific stub");
+              frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set");
+
+              debug("Creating and sending activate request");
               ActivateRequest req = ActivateRequest.newBuilder().build();
               ActivateResponse res = frontend.setActivate(req);
+              debug("Activate response arrived");
               System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case LOOKUP_CMD -> {
+              debug("Invoking lookup command");
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach( qualifier -> {
 
@@ -137,65 +170,102 @@ public class Admin {
 
                         res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
                       });
+              debug("Servers found");
             }
 
             case DEACT_CMD -> {
-
+              debug("Invoking deactivate command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
+              }
 
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set");
 
+              debug("Creating and sending deactivate request");
               DeactivateRequest d_req = DeactivateRequest.newBuilder().build();
               DeactivateResponse d_res = frontend.setDeactivate(d_req);
+              debug("Deactivate request arrived");
               System.out.println(Stringify.format(d_res.getCode())+"\n");
             }
 
             case ACTIV_GOSSIP -> {
-
+              debug("Invoking activateGossip command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
+              }
 
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set");
 
+              debug("Creating and sending activateGossip request");
               ActivateGossipRequest req = ActivateGossipRequest.newBuilder().build();
               ActivateGossipResponse res = frontend.setActivateGossip(req);
+              debug("ActivateGossip responsed arrived");
               System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case DEACT_GOSSIP -> {
-
+              debug("Invoking deactivateGossip command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
+              }
 
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set");
 
+              debug("Creating and sending deactivateGossip request");
               DeactivateGossipRequest req = DeactivateGossipRequest.newBuilder().build();
               DeactivateGossipResponse res = frontend.setDeactivateGossip(req);
+              debug("DeactivateGossip response arrived");
               System.out.println(Stringify.format(res.getCode())+"\n");
             }
 
             case GOSSIP -> {
-
+              debug("Invoking gossip command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
+              }
 
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set");
 
+              debug("Creating and sending Gossip request");
               GossipRequest req = GossipRequest.newBuilder().build();
               GossipResponse res = frontend.setGossip(req);
+              debug("Gossip response arrived");
               System.out.println(Stringify.format(res.getCode())+"\n");
             }
 

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import pt.ulisboa.tecnico.classes.Utilities;
@@ -29,6 +30,15 @@ public class Professor {
   private static final String OPEN_ENR_CMD = "openEnrollments";
   private static final String CLOSE_ENR_CMD = "closeEnrollments";
   private static final String CANCEL_ENR_CMD = "cancelEnrollment";
+  private static final Logger LOGGER = Logger.getLogger(Professor.class.getName());
+  private static String debugInput;
+  static boolean debugFlag = false;
+
+  public static void debug(String msg) {
+    if(debugFlag) {
+      LOGGER.info(msg);
+    }
+  }
 
 
   public static void main(String[] args) {
@@ -42,9 +52,19 @@ public class Professor {
     int s_count = 1;
     Utilities look = new Utilities();
 
+    if (args.length == 1)
+    {
+      debugInput = args[0];
+      if(debugInput.equals(DEBUG)) {
+        debugFlag = true;
+      }
+    }
+
+    debug("Creating Professor Frontend");
     try (ProfessorFrontend frontend = new ProfessorFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
       Signal.handle(new Signal(SIGINT), sig -> {
+        debug("SIGINT found");
         System.out.println(EXIT_PROFESSOR);
         frontend.close();
         System.exit(SUCCESS);
@@ -76,14 +96,20 @@ public class Professor {
             case EXIT_CMD -> System.exit(SUCCESS);
 
             case LIST_CMD -> {
-
+              debug("Invoking list command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
@@ -94,6 +120,7 @@ public class Professor {
             }
 
             case LOOKUP_CMD -> {
+              debug("Invoking lookup command");
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach( qualifier -> {
 
@@ -104,50 +131,75 @@ public class Professor {
 
               res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
                       });
+              debug("Servers found");
             }
 
             case OPEN_ENR_CMD -> {
-
+              debug("Invoking openEnrollments command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"P");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
+              debug("Creating and sending OpenEnrollments request");
               int numStudents = Integer.parseInt(line[1]);
               OpenEnrollmentsRequest oe_req = OpenEnrollmentsRequest.newBuilder().setCapacity(numStudents).build();
               OpenEnrollmentsResponse oe_res = frontend.setOE(oe_req);
+              debug("OpenEnrollments response arrived");
               System.out.println(Stringify.format(oe_res.getCode())+"\n");
             }
 
             case CLOSE_ENR_CMD -> {
-
+              debug("Invoking closeEnrollments command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"P");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
+              debug("Creating and sending CloseEnrollments request");
               CloseEnrollmentsRequest ce_req = CloseEnrollmentsRequest.newBuilder().build();
               CloseEnrollmentsResponse ce_res = frontend.setCE(ce_req);
+              debug("CloseEnrollments response arrived");
               System.out.println(Stringify.format(ce_res.getCode())+"\n");
             }
             case CANCEL_ENR_CMD -> {
-
+              debug("Invoking cancelEnrollment command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
+              debug("Creating and sending CancelEnrollment request");
               CancelEnrollmentRequest c_req = CancelEnrollmentRequest.newBuilder().setStudentId(line[1]).build();
               CancelEnrollmentResponse c_res = frontend.setCanEnr(c_req);
+              debug("CancelEnrollment response arrived");
               System.out.println(Stringify.format(c_res.getCode())+"\n");
             }
             default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");

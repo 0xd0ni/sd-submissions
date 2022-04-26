@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 import pt.ulisboa.tecnico.classes.Utilities;
@@ -28,6 +29,15 @@ public class Student {
   private static final String EXIT_CMD = "exit";
   private static final String LIST_CMD = "list";
   private static final String ENR_CMD = "enroll";
+  private static final Logger LOGGER = Logger.getLogger(Student.class.getName());
+  private static String debugInput;
+  static boolean debugFlag = false;
+
+  public static void debug(String msg) {
+    if(debugFlag) {
+      LOGGER.info(msg);
+    }
+  }
 
 
   public static void main(String[] args) {
@@ -47,17 +57,37 @@ public class Student {
       return;
     }
 
-    id = args[0];
-    name = "";
-    for (int j = 1; j < args.length; j++) {
-      name += args[j];
-      if (j != args.length - 1)
-        name += " ";
+    if (args.length == 3)
+    {
+        id = args[0];
+        name = "";
+        for (int j = 1; j < args.length; j++) {
+          name += args[j];
+          if (j != args.length - 1)
+            name += " ";
+        }
     }
 
+    if (args.length == 4)
+    {
+      id = args[0];
+      name = "";
+      for (int j = 1; j < args.length; j++) {
+        name += args[j];
+        if (j != args.length - 1)
+          name += " ";
+      }
+      debugInput = args[3];
+      if(debugInput.equals(DEBUG)) {
+        debugFlag = true;
+      }
+    }
+
+    debug("Creating Professor Frontend");
     try (StudentFrontend frontend = new StudentFrontend(host, port); Scanner scanner = new Scanner(System.in)) {
 
       Signal.handle(new Signal(SIGINT), sig -> {
+        debug("SIGINT found");
         System.out.println(EXIT_STUDENT);
         frontend.close();
         System.exit(SUCCESS);
@@ -89,17 +119,25 @@ public class Student {
             case EXIT_CMD -> System.exit(SUCCESS);
 
             case LIST_CMD -> {
-
+              debug("Invoking list command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
+              debug("Creating and sending List request");
               ListClassRequest list_req = ListClassRequest.newBuilder().build();
               ListClassResponse list_res = frontend.setListClass(list_req);
+              debug("List response arrived");
               if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.OK)
                 System.out.println(Stringify.format(frontend.getClassState(list_res))+"\n");
               else if (ResponseCode.forNumber(frontend.getCode(list_res)) == ResponseCode.INACTIVE_SERVER)
@@ -107,6 +145,7 @@ public class Student {
             }
 
             case LOOKUP_CMD -> {
+              debug("Invoking lookup command");
               Arrays.stream(line[2].split(",")).
                       collect(Collectors.toCollection(ArrayList::new)).stream().forEach(qualifier -> {
 
@@ -117,21 +156,30 @@ public class Student {
 
                         res.getServerList().stream().forEach(server -> servers.get(line[1]).add(server));
                       });
+              debug("Servers found");
             }
 
             case ENR_CMD -> {
-
+              debug("Invoking Enroll command");
               ArrayList<String> result = look.set_address_server(SERVICE,p_count,s_count,servers,"");
-              if(result.get(2).equals(PRIMARY))
+              debug("Server set");
+              if(result.get(2).equals(PRIMARY)) {
+                debug("Increasing primary count");
                 p_count++;
-              else
+              }
+              else {
+                debug("Increasing secondary count");
                 s_count++;
-
+              }
+              debug("Setting up specific stub");
               frontend.setupSpecificServer(result.get(0),Integer.parseInt(result.get(1)));
+              debug("Specific stub set up");
 
+              debug("Creating and sending Enroll request");
               EnrollRequest e_req = EnrollRequest.newBuilder().setStudent(
                       ClassesDefinitions.Student.newBuilder().setStudentId(id).setStudentName(name).build()).build();
               EnrollResponse e_res = frontend.setEnroll(e_req);
+              debug("Enroll response arrived");
               System.out.println(Stringify.format(e_res.getCode())+"\n");
             }
             default -> System.out.println(Stringify.format(ResponseCode.UNRECOGNIZED)+"\n");
