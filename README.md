@@ -16,8 +16,8 @@ management, to ensure your code runs using the correct components and not someon
 
 | Number | Name              | User                                      | Email                                        |
 |--------|-------------------|-------------------------------------------|----------------------------------------------|
-| 97281  | Allan Fernandes   | <https://github.com/Alravid>              | <mailto:allancravid@tecnico.ulisboa.pt>      |
-| 97326  | Martim Correia    | <https://github.com/Martimc123>           | <mailto:martim.correia@tecnico.ulisboa.pt>   |
+| 97281  | Allan Fernandes   | <https://github.com/acravid>              | <mailto:allancravid@tecnico.ulisboa.pt>      |
+| 97326  | Martim Correia    | <https://github.com/martimc123>           | <mailto:martim.correia@tecnico.ulisboa.pt>   |
 
 ## Getting Started
 
@@ -51,3 +51,6 @@ mvn clean install
 
 * [Maven](https://maven.apache.org/) - Build and dependency management tool;
 * [gRPC](https://grpc.io/) - RPC framework.
+
+
+## Screenshots
