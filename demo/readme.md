@@ -130,9 +130,8 @@ Enrollments are already closed.
 
 ----
 
-###Parte 2###
+## Parte 2
 
-## 1. Preparação do sistema
 
 Para testar o sistema e todos os seus componentes, é necessário preparar um ambiente com dados para proceder à verificação dos testes.
 O procedimento é igual á parte 1, o que muda é que agora é necessário o seguinte:
