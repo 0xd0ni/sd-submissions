@@ -16,7 +16,7 @@ management, to ensure your code runs using the correct components and not someon
 
 | Number | Name              | User                                      | Email                                        |
 |--------|-------------------|-------------------------------------------|----------------------------------------------|
-| 97281  | Allan Fernandes   | <https://github.com/acravid>              | <mailto:allancravid@tecnico.ulisboa.pt>      |
+| 97281  | Allan Fernandes   | <https://github.com/0xd0ni>              | <mailto:allancravid@tecnico.ulisboa.pt>      |
 | 97326  | Martim Correia    | <https://github.com/martimc123>           | <mailto:martim.correia@tecnico.ulisboa.pt>   |
 
 ## Getting Started
